@@ -2,6 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
 const path = require('path');
+const puppeteer = require('puppeteer');
 
 // URLs for different Big Red Keno locations
 const urls = ['https://results.bigredkeno.com/?community=omaha', 'https://results.bigredkeno.com/?community=lincoln', 'https://results.bigredkeno.com/?community=fremont', 'https://results.bigredkeno.com/?community=norfolk', 'https://results.bigredkeno.com/?community=blair', 'https://results.bigredkeno.com/?community=beatrice'];
@@ -53,5 +54,59 @@ async function scrapeKenoTable(url, location) {
     }
 }
 
-// Call the function to scrape all locations
-scrapeAllLocations().then(r => {});
+async function scrapeAllDates(url, location, browser) {
+    const page = await browser.newPage();
+    await page.goto(url);
+    console.log(`Scraping ${location}...`);
+
+    // Get all available dates from the dropdown
+    const dates = await page.$$eval('#ddlDate option', options =>
+        options.map(option => ({ date: option.value, selected: option.selected }))
+    );
+
+    const allData = {};
+
+    for (let { date } of dates) {
+        console.log(`Scraping data for ${date}...`);
+
+        // Select a date in the dropdown and wait for the table to reload
+        await page.select('#ddlDate', date);
+        await page.waitForNetworkIdle(); // Wait for the page to load the new data
+
+        // Scrape the table data
+        const tableData = await page.$$eval('#resulttable table tbody tr', rows =>
+            rows.map(row => {
+                const columns = Array.from(row.querySelectorAll('td')).map(cell => cell.textContent.trim());
+                const gameNumber = columns.shift(); // First column is game number
+                return { gameNumber, numbers: columns };
+            }).reduce((acc, { gameNumber, numbers }) => {
+                acc[gameNumber] = numbers;
+                return acc;
+            }, {})
+        );
+
+        allData[date] = tableData;
+    }
+
+    // Save the collected data
+    const outputDir = path.resolve(__dirname, './data');
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
+
+    fs.writeFileSync(path.join(outputDir, `${location}AllData.json`), JSON.stringify(allData, null, 2));
+    console.log(`Data for ${location} saved.`);
+}
+
+(async () => {
+    const browser = await puppeteer.launch({ headless: true });
+    await scrapeAllLocations();
+    try {
+        for (const url of urls) {
+            const location = url.split('community=')[1];
+            await scrapeAllDates(url, location, browser);
+        }
+    } catch (error) {
+        console.error('Error scraping data:', error);
+    } finally {
+        await browser.close();
+    }
+})();

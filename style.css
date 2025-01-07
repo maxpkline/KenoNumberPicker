@@ -20,11 +20,11 @@
     margin-bottom: 20px;
 }
 
-.keno-table{
+.keno-table {
     display: grid;
-    grid-template-columns: 1fr 6fr;
+    grid-template-columns: 1fr 6fr 2fr;
     text-align: center;
-    max-width: 700px;
+    max-width: 900px;
     min-width: 75px;
     margin: auto;
     border: 1px solid #ccc;
@@ -32,6 +32,13 @@
     background-color: #f9f9f9; /* Optional: Adds a background for better styling */
     border-radius: 5px; /* Optional: Adds rounded corners */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Adds subtle shadow */
+    gap: 10px; /* Adds spacing between grid cells */
+}
+
+
+.keno-table > * {
+    border: 1px solid #ccc; /* Adds border to each grid item */
+    background-color: #fff; /* Ensures grid items have a white background */
 }
 
 .screen.active {
