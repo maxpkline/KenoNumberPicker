@@ -24,7 +24,7 @@ async function showScreen(screenId) {
     displayStreaks(screenId);
     displayCoOccurrence(screenId);
 
-    // Display all data co-occurrences
+    // Display all data statistics
     displayAllDataCoOccurences(screenId);
 
     // Update the chart with the new location data
@@ -239,7 +239,7 @@ const chartConfig = {
     type: 'bar',
     data: null,
     options: {
-        indexAxis: 'y',
+        indexAxis: 'x',
         responsive: true,
         maintainAspectRatio: false,
         barThickness: 12, // Controls the thickness of each bar
@@ -382,25 +382,53 @@ function analyzeNumberCombinations(location) {
     return topCombinations;
 }
 
-// Function to display the results
+
+// Function to display the results and update the screen
 function displayCombinationAnalysis(location) {
     const combinations = analyzeNumberCombinations(location);
     if (!combinations) return;
 
-    console.log(`Top number combinations for ${location}:`);
+    const table = document.getElementById(location + '-combination-table');
+    table.style.display = 'grid';
+
+    // Clear any existing content
+    table.innerHTML = '';
+
+    // Create and append a header
+    const header = document.createElement('h3');
+    header.textContent = `Top Number Combinations for ${location}`;
+    table.appendChild(header);
+
+    // Append combination data
     combinations.forEach((combo, index) => {
-        console.log(`
-            Combination ${index + 1}:
-            Numbers: ${combo.numbers.join(', ')}
-            Occurrences: ${combo.occurrences}
-            Confidence: ${combo.confidence}%
-            Avg Individual Frequency: ${combo.avgIndividualFrequency}
-        `);
+        const combinationDiv = document.createElement('div');
+        combinationDiv.className = 'combination-entry';
+
+        const title = document.createElement('h4');
+        title.textContent = `Combination ${index + 1}`;
+        combinationDiv.appendChild(title);
+
+        const numbers = document.createElement('p');
+        numbers.textContent = `Numbers: ${combo.numbers.join(', ')}`;
+        combinationDiv.appendChild(numbers);
+
+        const occurrences = document.createElement('p');
+        occurrences.textContent = `Occurrences: ${combo.occurrences}`;
+        combinationDiv.appendChild(occurrences);
+
+        const confidence = document.createElement('p');
+        confidence.textContent = `Confidence: ${combo.confidence}%`;
+        combinationDiv.appendChild(confidence);
+
+        // const avgFreq = document.createElement('p');
+        // avgFreq.textContent = `Avg Individual Frequency: ${combo.avgIndividualFrequency}`;
+        // combinationDiv.appendChild(avgFreq);
+
+        table.appendChild(combinationDiv);
     });
 
     return combinations;
 }
-
 
 
 // Time series analysis to detect patterns in recent games
@@ -562,19 +590,52 @@ function generatePredictions(location) {
         .slice(0, 10);
 }
 
-// Function to display predictions
+// Function to display predictions and update the screen
 function displayPredictions(location) {
     const predictions = generatePredictions(location);
+    if (!predictions) return;
 
-    console.log(`\nTop predicted numbers for ${location}:`);
+    const table = document.getElementById(location + '-predictions-table');
+    table.style.display = 'grid';
+
+    // Clear any existing content
+    table.innerHTML = '';
+
+    // Create and append a header
+    const header = document.createElement('h3');
+    header.textContent = `Top Predicted Numbers for ${location}`;
+    table.appendChild(header);
+
+    // Append prediction data
     predictions.forEach((pred, index) => {
-        console.log(`
-            Number ${index + 1}: ${pred.number}
-            Confidence: ${pred.confidence}
-            Recent Trend Score: ${pred.recentTrend.toFixed(2)}
-            Gap Analysis Score: ${pred.gapAnalysis.toFixed(2)}
-            Hot/Cold Score: ${pred.hotColdScore.toFixed(2)}
-        `);
+        const predictionDiv = document.createElement('div');
+        predictionDiv.className = 'prediction-entry';
+
+        const title = document.createElement('h4');
+        title.textContent = `Prediction ${index + 1}`;
+        predictionDiv.appendChild(title);
+
+        const number = document.createElement('p');
+        number.textContent = `Number: ${pred.number}`;
+        predictionDiv.appendChild(number);
+
+        const confidence = document.createElement('p');
+        confidence.textContent = `Confidence: ${pred.confidence}`;
+        predictionDiv.appendChild(confidence);
+
+        const trend = document.createElement('p');
+        trend.textContent = `Recent Trend Score: ${pred.recentTrend.toFixed(2)}`;
+        predictionDiv.appendChild(trend);
+
+        const gapAnalysis = document.createElement('p');
+        gapAnalysis.textContent = `Gap Analysis Score: ${pred.gapAnalysis.toFixed(2)}`;
+        predictionDiv.appendChild(gapAnalysis);
+
+        const hotCold = document.createElement('p');
+        hotCold.textContent = `Hot/Cold Score: ${pred.hotColdScore.toFixed(2)}`;
+        predictionDiv.appendChild(hotCold);
+
+        table.appendChild(predictionDiv);
     });
 
     return predictions;
@@ -643,20 +704,357 @@ function analyzeNumberCoOccurrence(location) {
         .sort((a, b) => b.frequency - a.frequency);
 }
 
-// Function to display co-occurrence results
+// Function to display number co-occurrences and update the screen
 function displayCoOccurrence(location) {
     const predictions = analyzeNumberCoOccurrence(location);
+    if (!predictions || predictions.length === 0) {
+        console.error(`No predictions available for location: ${location}`);
+        return;
+    }
 
-    console.log(`\nNumber Co-Occurrences for: ${location}:`);
+    const table = document.getElementById(location + '-cooccurrence-table');
+    table.style.display = 'grid';
+
+    // Clear any existing content
+    table.innerHTML = '';
+
+    // Create and append a header
+    // const header = document.createElement('h3');
+    // header.textContent = `Top Number Co-Occurrences for ${location}`;
+    // table.appendChild(header);
+
+    // Trim predictions to the top 10 for display
     const trimmedPreds = predictions.slice(0, 10);
+
+    // Append co-occurrence data with validation
     trimmedPreds.forEach((pred, index) => {
-        console.log(pred);
+        if (!pred) {
+            console.warn(`Invalid prediction entry at index ${index}`, pred);
+            return;
+        }
+
+        const coOccurrenceDiv = document.createElement('div');
+        coOccurrenceDiv.className = 'cooccurrence-entry';
+
+        const title = document.createElement('h4');
+        title.textContent = `Co-Occurrence ${index + 1}`;
+        coOccurrenceDiv.appendChild(title);
+
+        const numbers = document.createElement('p');
+        numbers.textContent = `Numbers: ${pred.pair.join(', ')}`;
+        coOccurrenceDiv.appendChild(numbers);
+
+        const frequency = document.createElement('p');
+        frequency.textContent = 'Frequency: ' + pred.frequency;
+        coOccurrenceDiv.appendChild(frequency);
+
+        table.appendChild(coOccurrenceDiv);
     });
 
     return predictions;
 }
 
 
+
+// functions to analyze number combinations of ALL data
+
+function analyzeNumberCombinationsOfAllData(location) {
+    const locationData = allDataFromLocations[location];
+    if (!locationData) {
+        console.error(`Data for location ${location} not found`);
+        return null;
+    }
+
+    // Create a map to store combinations and their frequencies
+    const combinationCounts = new Map();
+
+    // Process each game's data
+    Object.values(locationData).forEach(gameNumbers => {
+        if (!Array.isArray(gameNumbers)) return;
+
+        // Generate all possible combinations of 3 numbers from this game
+        for (let i = 0; i < gameNumbers.length - 2; i++) {
+            for (let j = i + 1; j < gameNumbers.length - 1; j++) {
+                for (let k = j + 1; k < gameNumbers.length; k++) {
+                    // Sort numbers to ensure consistent combination keys
+                    const combo = [gameNumbers[i], gameNumbers[j], gameNumbers[k]].sort((a, b) => a - b);
+                    const comboKey = combo.join('-');
+
+                    combinationCounts.set(comboKey, (combinationCounts.get(comboKey) || 0) + 1);
+                }
+            }
+        }
+    });
+
+    // Convert the map to an array and sort by frequency
+    const sortedCombinations = Array.from(combinationCounts.entries())
+        .map(([combo, count]) => ({
+            numbers: combo.split('-').map(Number),
+            count: count,
+            // Calculate the individual frequency score of each number
+            individualScore: combo.split('-')
+                .map(Number)
+                .reduce((sum, num) => {
+                    const individualCount = locationsData[location + 'Counts']
+                        .find(item => item.number === num)?.count || 0;
+                    return sum + individualCount;
+                }, 0)
+        }))
+        .sort((a, b) => {
+            // Primary sort by combination frequency
+            if (b.count !== a.count) return b.count - a.count;
+            // Secondary sort by individual number frequencies
+            return b.individualScore - a.individualScore;
+        });
+
+    // Calculate confidence score for each combination
+    const totalGames = Object.keys(locationData).length;
+    const topCombinations = sortedCombinations.slice(0, 10).map(combo => ({
+        numbers: combo.numbers,
+        occurrences: combo.count,
+        confidence: (combo.count / totalGames * 100).toFixed(2),
+        avgIndividualFrequency: (combo.individualScore / 3).toFixed(2)
+    }));
+
+    return topCombinations;
+}
+
+// Function to display the results
+function displayCombinationAnalysisOfAllData(location) {
+    const combinations = analyzeNumberCombinations(location);
+    if (!combinations) return;
+
+    console.log(`Top number combinations for ${location}:`);
+    combinations.forEach((combo, index) => {
+        console.log(`
+            Combination ${index + 1}:
+            Numbers: ${combo.numbers.join(', ')}
+            Occurrences: ${combo.occurrences}
+            Confidence: ${combo.confidence}%
+            Avg Individual Frequency: ${combo.avgIndividualFrequency}
+        `);
+    });
+
+    return combinations;
+}
+
+
+
+// Time series analysis to detect patterns in recent games
+function analyzeRecentTrendsOfAllData(location, windowSize = 10) {
+    const locationData = locationsData[location];
+    if (!locationData) return null;
+
+    const games = Object.entries(locationData)
+        .sort((a, b) => Number(b[0]) - Number(a[0])) // Sort by game number descending
+        .slice(0, windowSize) // Get most recent games
+        .flatMap(([_, numbers]) => numbers);
+
+    // Count frequencies in recent window
+    const recentCounts = new Map();
+    games.forEach(num => {
+        recentCounts.set(num, (recentCounts.get(num) || 0) + 1);
+    });
+
+    return Array.from(recentCounts.entries())
+        .map(([number, count]) => ({
+            number: Number(number),
+            recentFrequency: count,
+            momentum: count / windowSize
+        }))
+        .sort((a, b) => b.momentum - a.momentum);
+}
+
+// Gap analysis to find "due" numbers
+function analyzeNumberGapsOfAllData(location) {
+    const locationData = locationsData[location];
+    if (!locationData) return null;
+
+    const games = Object.entries(locationData)
+        .sort((a, b) => Number(b[0]) - Number(a[0])); // Sort by game number descending
+
+    const gapAnalysis = new Map();
+    const currentGaps = new Map();
+
+    // Initialize gaps for all possible keno numbers (1-80)
+    for (let i = 1; i <= 80; i++) {
+        currentGaps.set(i, 0);
+    }
+
+    // Calculate gaps between appearances
+    games.forEach(([_, numbers]) => {
+        // Increment gaps for all numbers
+        currentGaps.forEach((gap, number) => {
+            currentGaps.set(number, gap + 1);
+        });
+
+        // Reset gap for numbers that appeared
+        numbers.forEach(num => {
+            const gap = currentGaps.get(num);
+            gapAnalysis.set(num, (gapAnalysis.get(num) || []).concat(gap));
+            currentGaps.set(num, 0);
+        });
+    });
+
+    // Calculate average gaps and current gaps
+    return Array.from(gapAnalysis.entries())
+        .map(([number, gaps]) => {
+            const avgGap = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length;
+            return {
+                number: Number(number),
+                currentGap: currentGaps.get(Number(number)),
+                averageGap: avgGap,
+                gapRatio: currentGaps.get(Number(number)) / avgGap
+            };
+        })
+        .sort((a, b) => b.gapRatio - a.gapRatio);
+}
+
+// Hot/Cold analysis with weighted recent performance
+function analyzeHotColdPatternsOfAllData(location, recentWeight = 2) {
+    const locationData = locationsData[location];
+    if (!locationData) return null;
+
+    const games = Object.entries(locationData)
+        .sort((a, b) => Number(b[0]) - Number(a[0]));
+
+    const recentGames = games.slice(0, 20);  // Last 20 games
+    const olderGames = games.slice(20);      // Older games
+
+    // Calculate weighted frequencies
+    const numberAnalysis = new Map();
+
+    // Process recent games with higher weight
+    recentGames.forEach(([_, numbers]) => {
+        numbers.forEach(num => {
+            numberAnalysis.set(num, (numberAnalysis.get(num) || 0) + recentWeight);
+        });
+    });
+
+    // Process older games with normal weight
+    olderGames.forEach(([_, numbers]) => {
+        numbers.forEach(num => {
+            numberAnalysis.set(num, (numberAnalysis.get(num) || 0) + 1);
+        });
+    });
+
+    return Array.from(numberAnalysis.entries())
+        .map(([number, score]) => ({
+            number: Number(number),
+            weightedScore: score,
+            recentPerformance: recentGames.filter(([_, nums]) =>
+                nums.includes(Number(number))).length / 20
+        }))
+        .sort((a, b) => b.weightedScore - a.weightedScore);
+}
+
+// Combine all analyses to generate final predictions
+function generatePredictionsofAllData(location) {
+    const recentTrends = analyzeRecentTrends(location);
+    const gapAnalysis = analyzeNumberGaps(location);
+    const hotCold = analyzeHotColdPatterns(location);
+
+    // Normalize and combine scores
+    const combinedScores = new Map();
+
+    // Helper function to normalize scores
+    const normalizeScores = (array, scoreKey) => {
+        const max = Math.max(...array.map(item => item[scoreKey]));
+        return array.map(item => ({
+            number: item.number,
+            score: item[scoreKey] / max
+        }));
+    };
+
+    // Combine normalized scores
+    const normalizedTrends = normalizeScores(recentTrends, 'momentum');
+    const normalizedGaps = normalizeScores(gapAnalysis, 'gapRatio');
+    const normalizedHotCold = normalizeScores(hotCold, 'weightedScore');
+
+    // Calculate combined scores with weights
+    [
+        { data: normalizedTrends, weight: 0.4 },
+        { data: normalizedGaps, weight: 0.3 },
+        { data: normalizedHotCold, weight: 0.3 }
+    ].forEach(({ data, weight }) => {
+        data.forEach(({ number, score }) => {
+            combinedScores.set(
+                number,
+                (combinedScores.get(number) || 0) + score * weight
+            );
+        });
+    });
+
+    // Return final predictions
+    return Array.from(combinedScores.entries())
+        .map(([number, score]) => ({
+            number: Number(number),
+            score: score.toFixed(3),
+            confidence: (score * 100).toFixed(1) + '%',
+            recentTrend: recentTrends.find(t => t.number === Number(number))?.momentum || 0,
+            gapAnalysis: gapAnalysis.find(g => g.number === Number(number))?.gapRatio || 0,
+            hotColdScore: hotCold.find(h => h.number === Number(number))?.weightedScore || 0
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10);
+}
+
+// Function to display predictions
+function displayPredictionsOfAllData(location) {
+    const predictions = generatePredictions(location);
+
+    console.log(`\nTop predicted numbers for ${location}:`);
+    predictions.forEach((pred, index) => {
+        console.log(`
+            Number ${index + 1}: ${pred.number}
+            Confidence: ${pred.confidence}
+            Recent Trend Score: ${pred.recentTrend.toFixed(2)}
+            Gap Analysis Score: ${pred.gapAnalysis.toFixed(2)}
+            Hot/Cold Score: ${pred.hotColdScore.toFixed(2)}
+        `);
+    });
+
+    return predictions;
+}
+
+function analyzeStreaksOfAllData(location) {
+    const locationData = locationsData[location];
+    if (!locationData) return null;
+
+    const streaks = new Map();
+    const games = Object.values(locationData);
+
+    games.forEach(numbers => {
+        numbers.forEach(num => {
+            if (!streaks.has(num)) streaks.set(num, { current: 0, max: 0 });
+            streaks.get(num).current += 1;
+            streaks.get(num).max = Math.max(streaks.get(num).current, streaks.get(num).max);
+        });
+
+        // Reset streaks for missing numbers
+        streaks.forEach((streak, num) => {
+            if (!numbers.includes(num)) streak.current = 0;
+        });
+    });
+
+    return Array.from(streaks.entries())
+        .map(([number, { max }]) => ({ number, maxStreak: max }))
+        .sort((a, b) => b.maxStreak - a.maxStreak);
+}
+
+// Function to display streaks
+function displayStreaksOfAllData(location) {
+    const predictions = analyzeStreaks(location);
+
+    console.log(`\nNumber Streaks for: ${location}:`);
+    predictions.forEach((pred, index) => {
+        console.log(pred);
+    });
+
+    return predictions;
+}
+
+// Function to analyze number co-occurences of ALL data
 function analyzeNumberCoOccurrenceOfAllData(location) {
     const locationData = allDataFromLocations[location];
     if (!locationData) return null;
@@ -683,16 +1081,52 @@ function analyzeNumberCoOccurrenceOfAllData(location) {
         .sort((a, b) => b.frequency - a.frequency);
 }
 
-// Function to display co-occurrence results for ALL data
+// Function to display number co-occurrences and update the screen
 function displayAllDataCoOccurences(location) {
     const predictions = analyzeNumberCoOccurrenceOfAllData(location);
+    if (!predictions || predictions.length === 0) {
+        console.error(`No predictions available for location: ${location}`);
+        return;
+    }
 
-    console.log(`\nNumber Co-Occurrences of the last 5 days for: ${location}:`);
+    const table = document.getElementById(location + '-cooccurrence-table-all-data');
+    table.style.display = 'grid';
+
+    // Clear any existing content
+    table.innerHTML = '';
+
+    // // Create and append a header
+    // const header = document.createElement('h3');
+    // header.textContent = `Top Number Co-Occurrences for ${location}`;
+    // table.appendChild(header);
+
+    // Trim predictions to the top 10 for display
     const trimmedPreds = predictions.slice(0, 10);
+
+    // Append co-occurrence data with validation
     trimmedPreds.forEach((pred, index) => {
-        console.log(pred);
+        if (!pred) {
+            console.warn(`Invalid prediction entry at index ${index}`, pred);
+            return;
+        }
+
+        const coOccurrenceDiv = document.createElement('div');
+        coOccurrenceDiv.className = 'cooccurrence-entry';
+
+        const title = document.createElement('h4');
+        title.textContent = `Co-Occurrence ${index + 1}`;
+        coOccurrenceDiv.appendChild(title);
+
+        const numbers = document.createElement('p');
+        numbers.textContent = `Numbers: ${pred.pair.join(', ')}`;
+        coOccurrenceDiv.appendChild(numbers);
+
+        const frequency = document.createElement('p');
+        frequency.textContent = 'Frequency: ' + pred.frequency;
+        coOccurrenceDiv.appendChild(frequency);
+
+        table.appendChild(coOccurrenceDiv);
     });
 
     return predictions;
 }
-

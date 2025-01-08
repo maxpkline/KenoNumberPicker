@@ -104,6 +104,7 @@ async function scrapeAllDates(url, location, browser) {
             const location = url.split('community=')[1];
             await scrapeAllDates(url, location, browser);
         }
+        console.log("Finished scraping all data.");
     } catch (error) {
         console.error('Error scraping data:', error);
     } finally {

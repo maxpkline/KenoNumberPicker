@@ -35,6 +35,43 @@
     gap: 10px; /* Adds spacing between grid cells */
 }
 
+.combination-table {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+.combination-entry {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.predictions-table {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+.prediction-entry {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #eef7ff;
+}
+
+.cooccurrence-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+}
+.cooccurrence-entry {
+    text-align: center;
+    padding: 10px;
+    width: 90%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f6f6f6;
+}
 
 .keno-table > * {
     border: 1px solid #ccc; /* Adds border to each grid item */
