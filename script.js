@@ -1,3 +1,47 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const divs = [
+        'omaha-keno-title',
+        'omaha-keno-table',
+        'omaha-kenoChart',
+        'omaha-combination-table',
+        'omaha-predictions-table',
+        'omaha-cooccurrence-table',
+        'omaha-cooccurrence-table-all-data',
+        'omaha-streaks-table',
+        'omaha-model-training',
+        'omaha-model-prediction'
+    ];
+
+    divs.forEach(divId => {
+        const element = document.getElementById(divId);
+        if (element) {
+            // Create a wrapper for the toggle state
+            const wrapper = document.createElement('div');
+            wrapper.className = 'toggle-wrapper';
+            element.parentNode.insertBefore(wrapper, element);
+            wrapper.appendChild(element);
+
+            // Add a toggle indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'toggle-indicator';
+            wrapper.appendChild(indicator);
+
+            // Add a data attribute for the dynamic message
+            wrapper.dataset.toggleMessage = `Click to expand the: ${divId.replace(/-/g, ' ')}`;
+
+            // Add click event listener to the wrapper
+            wrapper.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (this.classList.contains('collapsed')) {
+                    this.classList.remove('collapsed');
+                } else {
+                    this.classList.add('collapsed');
+                }
+            });
+        }
+    });
+});
+
 async function showScreen(screenId) {
     const buttons = document.getElementsByClassName('button');
     for (let button of buttons) {
@@ -119,6 +163,13 @@ async function loadData() {
         initializeChart();
         // Display data for Omaha on start
         displayData(locationsData['omaha'], 'omaha');
+        displayCombinationAnalysis('omaha');
+        displayPredictions('omaha');
+        displayStreaks('omaha');
+        displayCoOccurrence('omaha');
+
+        // Display all data statistics
+        displayAllDataCoOccurences('omaha');
     } catch (error) {
         console.error("Error loading data: ", error);
     }
@@ -669,9 +720,24 @@ function analyzeStreaks(location) {
 // Function to display streaks
 function displayStreaks(location) {
     const predictions = analyzeStreaks(location);
+    const trimmedPreds = predictions.slice(0, 10);
+    const table = document.getElementById(location + '-streaks-table');
+    table.style.display = 'grid';
+
+    // Clear any existing content
+    table.innerHTML = '';
+
+    const header = document.createElement('div');
+    header.className = 'streak-header header-span';
+    header.textContent = `Number Streaks for ${location}`;
+    table.appendChild(header);
 
     console.log(`\nNumber Streaks for: ${location}:`);
-    predictions.forEach((pred, index) => {
+    trimmedPreds.forEach((pred, index) => {
+        const streakDiv = document.createElement('div');
+        streakDiv.className = 'streak-entry';
+        streakDiv.textContent = pred.number + ': ' + pred.maxStreak;
+        table.appendChild(streakDiv);
         console.log(pred);
     });
 
@@ -719,9 +785,10 @@ function displayCoOccurrence(location) {
     table.innerHTML = '';
 
     // Create and append a header
-    // const header = document.createElement('h3');
-    // header.textContent = `Top Number Co-Occurrences for ${location}`;
-    // table.appendChild(header);
+    const header = document.createElement('div');
+    header.className = 'cooccurrence-header header-span';
+    header.textContent = `Top Number Co-Occurrences for ${location}`;
+    table.appendChild(header);
 
     // Trim predictions to the top 10 for display
     const trimmedPreds = predictions.slice(0, 10);
@@ -1054,7 +1121,8 @@ function displayStreaksOfAllData(location) {
     return predictions;
 }
 
-// Function to analyze number co-occurences of ALL data
+
+// DOESNT WORKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
 function analyzeNumberCoOccurrenceOfAllData(location) {
     const locationData = allDataFromLocations[location];
     if (!locationData) return null;
@@ -1062,12 +1130,20 @@ function analyzeNumberCoOccurrenceOfAllData(location) {
     const coOccurrenceMap = new Map();
     const games = Object.values(locationData);
 
-    games.forEach(numbers => {
+    // Add debugging
+    console.log('Games:', games);
+
+    games.forEach((numbers, index) => {
+        // Add type checking
+        if (!Array.isArray(numbers)) {
+            console.log(`Warning: Element at index ${index} is not an array:`, numbers);
+            return; // Skip this iteration
+        }
+
         numbers.forEach((num1, i) => {
             for (let j = i + 1; j < numbers.length; j++) {
                 const num2 = numbers[j];
                 const key = [num1, num2].sort((a, b) => a - b).join('-');
-
                 coOccurrenceMap.set(key, (coOccurrenceMap.get(key) || 0) + 1);
             }
         });
@@ -1095,10 +1171,11 @@ function displayAllDataCoOccurences(location) {
     // Clear any existing content
     table.innerHTML = '';
 
-    // // Create and append a header
-    // const header = document.createElement('h3');
-    // header.textContent = `Top Number Co-Occurrences for ${location}`;
-    // table.appendChild(header);
+    // Create and append a header
+    const header = document.createElement('div');
+    header.className = 'cooccurrence-header header-span';
+    header.textContent = `Top Number Co-Occurrences for ${location}`;
+    table.appendChild(header);
 
     // Trim predictions to the top 10 for display
     const trimmedPreds = predictions.slice(0, 10);
