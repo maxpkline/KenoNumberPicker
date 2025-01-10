@@ -1122,7 +1122,7 @@ function displayStreaksOfAllData(location) {
 }
 
 
-// DOESNT WORKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+// works now
 function analyzeNumberCoOccurrenceOfAllData(location) {
     const locationData = allDataFromLocations[location];
     if (!locationData) return null;
@@ -1133,13 +1133,14 @@ function analyzeNumberCoOccurrenceOfAllData(location) {
     // Add debugging
     console.log('Games:', games);
 
-    games.forEach((numbers, index) => {
+    games.forEach((game, index) => {
         // Add type checking
-        if (!Array.isArray(numbers)) {
-            console.log(`Warning: Element at index ${index} is not an array:`, numbers);
+        if (!game || !Array.isArray(game.numbers)) {
+            console.log(`Warning: Element at index ${index} is invalid:`, game);
             return; // Skip this iteration
         }
 
+        const numbers = game.numbers;
         numbers.forEach((num1, i) => {
             for (let j = i + 1; j < numbers.length; j++) {
                 const num2 = numbers[j];
@@ -1156,6 +1157,7 @@ function analyzeNumberCoOccurrenceOfAllData(location) {
         }))
         .sort((a, b) => b.frequency - a.frequency);
 }
+
 
 // Function to display number co-occurrences and update the screen
 function displayAllDataCoOccurences(location) {

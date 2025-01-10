@@ -34,8 +34,8 @@
         <div id="omaha-streaks-table" class="streaks-table"></div>
         <div id="omaha-model-training" class="model-training"></div>
         <div id="omaha-model-prediction" class="model-prediction"></div>
-        <button id="predictButton" class="button" onclick="main()">Start Training</button>
-
+        <button id="omaha-trainButton" class="button" onclick="main('omaha')">Model 1</button>
+        <button id="omaha-trainButton1" class="button" onclick="mainModel2('omaha')">Model 2</button>
     </div>
 
     <div id="lincoln" class="screen">
@@ -47,6 +47,10 @@
         <div id="lincoln-cooccurrence-table" class="cooccurrence-table"></div>
         <div id="lincoln-cooccurrence-table-all-data" class="cooccurrence-table"></div>
         <div id="lincoln-streaks-table" class="streaks-table"></div>
+        <div id="lincoln-model-training" class="model-training"></div>
+        <div id="lincoln-model-prediction" class="model-prediction"></div>
+        <button id="lincoln-trainButton" class="button" onclick="main('lincoln')">Model 1</button>
+        <button id="lincoln-trainButton1" class="button" onclick="mainModel2('lincoln')">Model 2</button>
     </div>
 
     <div id="fremont" class="screen">
@@ -58,6 +62,11 @@
         <div id="fremont-cooccurrence-table" class="cooccurrence-table"></div>
         <div id="fremont-cooccurrence-table-all-data" class="cooccurrence-table"></div>
         <div id="fremont-streaks-table" class="streaks-table"></div>
+        <div id="fremont-model-training" class="model-training"></div>
+        <div id="fremont-model-prediction" class="model-prediction"></div>
+        <button id="fremont-trainButton" class="button" onclick="main('fremont')">Model 1</button>
+        <button id="fremont-trainButton1" class="button" onclick="mainModel2('fremont')">Model 2</button>
+
     </div>
 
     <div id="norfolk" class="screen">
@@ -69,6 +78,11 @@
         <div id="norfolk-cooccurrence-table" class="cooccurrence-table"></div>
         <div id="norfolk-cooccurrence-table-all-data" class="cooccurrence-table"></div>
         <div id="norfolk-streaks-table" class="streaks-table"></div>
+        <div id="norfolk-model-training" class="model-training"></div>
+        <div id="norfolk-model-prediction" class="model-prediction"></div>
+        <button id="norfolk-trainButton" class="button" onclick="main('norfolk')">Model 1</button>
+        <button id="norfolk-trainButton1" class="button" onclick="mainModel2('norfolk')">Model 2</button>
+
     </div>
 
     <div id="blair" class="screen">
@@ -80,6 +94,11 @@
         <div id="blair-cooccurrence-table" class="cooccurrence-table"></div>
         <div id="blair-cooccurrence-table-all-data" class="cooccurrence-table"></div>
         <div id="blair-streaks-table" class="streaks-table"></div>
+        <div id="blair-model-training" class="model-training"></div>
+        <div id="blair-model-prediction" class="model-prediction"></div>
+        <button id="blair-trainButton" class="button" onclick="main('blair')">Model 1</button>
+        <button id="blair-trainButton1" class="button" onclick="mainModel2('blair')">Model 2</button>
+
     </div>
 
     <div id="beatrice" class="screen">
@@ -91,6 +110,11 @@
         <div id="beatrice-cooccurrence-table" class="cooccurrence-table"></div>
         <div id="beatrice-cooccurrence-table-all-data" class="cooccurrence-table"></div>
         <div id="beatrice-streaks-table" class="streaks-table"></div>
+        <div id="beatrice-model-training" class="model-training"></div>
+        <div id="beatrice-model-prediction" class="model-prediction"></div>
+        <button id="beatrice-trainButton" class="button" onclick="main('beatrice')">Model 1</button>
+        <button id="beatrice-trainButton1" class="button" onclick="mainModel2('beatrice')">Model 2</button>
+
     </div>
 </div>
 <script src="script.js"></script>
@@ -172,26 +196,92 @@
         };
     };
 
-    async function trainModel(model, inputs, labels) {
+    async function trainModel(model, inputs, labels, location) {
         try {
-            const trainingDiv = document.getElementById('omaha-model-training');
-            trainingDiv.innerHTML = '<p>Training started...</p>';
+            const trainingDiv = document.getElementById(`${location}-model-training`);
+
+            // Create a structured display container
+            trainingDiv.innerHTML = `
+            <div class="training-status">
+                <h3>Training Progress</h3>
+                <div class="progress-container">
+                    <div class="current-epoch">Preparing to train...</div>
+                    <div class="metrics-container">
+                        <div class="metric-box">
+                            <label>Training Loss:</label>
+                            <span id="${location}-train-loss">-</span>
+                        </div>
+                        <div class="metric-box">
+                            <label>Validation Loss:</label>
+                            <span id="${location}-val-loss">-</span>
+                        </div>
+                        <div class="metric-box">
+                            <label>Training Accuracy:</label>
+                            <span id="${location}-train-acc">-</span>
+                        </div>
+                        <div class="metric-box">
+                            <label>Validation Accuracy:</label>
+                            <span id="${location}-val-acc">-</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div id="${location}-progress-bar" class="progress-bar"></div>
+                    </div>
+                    <div class="training-log" id="${location}-training-log"></div>
+                </div>
+            </div>
+        `;
+
+            // Keep track of best metrics
+            let bestValLoss = Infinity;
+            let trainingLog = document.getElementById(`${location}-training-log`);
+            let progressBar = document.getElementById(`${location}-progress-bar`);
+
+            const totalEpochs = 50;
 
             const history = await model.fit(inputs, labels, {
-                epochs: 10,
+                epochs: totalEpochs,
                 batchSize: 32,
                 validationSplit: 0.2,
                 shuffle: true,
                 callbacks: {
+                    onEpochBegin: (epoch) => {
+                        document.querySelector('.current-epoch').textContent =
+                            `Epoch ${epoch + 1}/${totalEpochs} in progress...`;
+                    },
                     onEpochEnd: (epoch, logs) => {
-                        const message = `
-                        <p>
-                            Epoch ${epoch + 1}:<br>
-                            Loss: ${logs.loss.toFixed(4)}<br>
-                            Validation Loss: ${logs.val_loss.toFixed(4)}
-                        </p>
-                    `;
-                        trainingDiv.innerHTML = message;
+                        // Update progress bar
+                        const progress = ((epoch + 1) / totalEpochs) * 100;
+                        progressBar.style.width = `${progress}%`;
+
+                        // Update metrics
+                        document.getElementById(`${location}-train-loss`).textContent =
+                            logs.loss.toFixed(4);
+                        document.getElementById(`${location}-val-loss`).textContent =
+                            logs.val_loss.toFixed(4);
+                        document.getElementById(`${location}-train-acc`).textContent =
+                            (logs.acc * 100).toFixed(2) + '%';
+                        document.getElementById(`${location}-val-acc`).textContent =
+                            (logs.val_acc * 100).toFixed(2) + '%';
+
+                        // Check for best validation loss
+                        if (logs.val_loss < bestValLoss) {
+                            bestValLoss = logs.val_loss;
+                            trainingLog.innerHTML = `
+                            <div class="best-metric">
+                                ★ New best validation loss: ${logs.val_loss.toFixed(4)} (Epoch ${epoch + 1})
+                            </div>` + trainingLog.innerHTML;
+                        }
+
+                        // Add log entry
+                        trainingLog.innerHTML = `
+                        <div>
+                            Epoch ${epoch + 1}/${totalEpochs}:
+                            loss=${logs.loss.toFixed(4)},
+                            val_loss=${logs.val_loss.toFixed(4)},
+                            acc=${(logs.acc * 100).toFixed(2)}%,
+                            val_acc=${(logs.val_acc * 100).toFixed(2)}%
+                        </div>` + trainingLog.innerHTML;
 
                         console.log(`Epoch ${epoch + 1}: loss = ${logs.loss.toFixed(4)}, val_loss = ${logs.val_loss.toFixed(4)}`);
                     }
@@ -199,12 +289,16 @@
             });
 
             console.log('Training completed:', history);
-            trainingDiv.innerHTML += '<p>Training completed successfully!</p>';
+            document.querySelector('.current-epoch').textContent = 'Training completed successfully!';
             return history;
+
         } catch (error) {
             console.error('Training error:', error);
-            const trainingDiv = document.getElementById('omaha-model-training');
-            trainingDiv.innerHTML = `<p style="color: red;">Training failed: ${error.message}</p>`;
+            const trainingDiv = document.getElementById(`${location}-model-training`);
+            trainingDiv.innerHTML += `
+            <div class="training-error">
+                Training failed: ${error.message}
+            </div>`;
             throw error;
         }
     }
@@ -457,7 +551,7 @@
         return {
             fourNumbers: analyzeCombinations(data.slice(0, 100), 4),
             fiveNumbers: analyzeCombinations(data.slice(0, 100), 5),
-            // sixNumbers: analyzeCombinations(data.slice(0, 100), 6),
+            sixNumbers: analyzeCombinations(data.slice(0, 100), 6),
             // sevenNumbers: analyzeCombinations(data.slice(0, 100), 7),
             // eightNumbers: analyzeCombinations(data.slice(0, 100), 8)
         };
@@ -531,7 +625,7 @@
         const predictionContainer = document.getElementById(`${location}-model-prediction`);
 
         // Clear previous content
-        // predictionContainer.innerHTML = "";
+        predictionContainer.innerHTML = "";
 
         // Display predictions
         const predictionTitle = document.createElement("h3");
@@ -600,12 +694,18 @@
             patternAnalysis.multiCombinations.fiveNumbers.topCombos.slice(0, 5),
             combo => `<strong>Combination:</strong> [${combo.numbers.join(", ")}], Frequency ${combo.frequency}`
         );
+
+        addAnalysisSection(
+            "Top 6-Number Combinations",
+            patternAnalysis.multiCombinations.sixNumbers.topCombos.slice(0, 5),
+            combo => `<strong>Combination:</strong> [${combo.numbers.join(", ")}], Frequency ${combo.frequency}`
+        );
     }
 
-    async function main() {
+    async function main(location) {
         try {
             // Get and process the data
-            const kenoData = await processKenoData('omahaallData');
+            const kenoData = await processKenoData(`${location}allData`);
 
             if (!kenoData || kenoData.length === 0) {
                 throw new Error('Failed to load Keno data or empty dataset');
@@ -654,18 +754,18 @@
             model.compile({
                 optimizer: 'adam',
                 loss: 'meanSquaredError',
-                metrics: ['mse']
+                metrics: ['mse', 'accuracy']
             });
 
             // Print model summary
             model.summary();
 
             // Train the model
-            const history = await trainModel(model, inputs, labels);
+            const history = await trainModel(model, inputs, labels, location);
             console.log('Training completed:', history);
 
             // Make prediction
-            const results = await predictNextGames(model, kenoData, 10, 'omaha');
+            const results = await predictNextGames(model, kenoData, 10, location);
             // console.log('Neural Network Predictions:', results.predictions);
             // console.log('Pattern Analysis:', results.patterns);
 
@@ -674,6 +774,194 @@
             throw error;
         }
     }
+
+    const preprocessDataModel2 = (data) => {
+        const inputs = [];
+        const labels = [];
+
+        // Rolling window size
+        const windowSize = 5;
+
+        // Calculate hot/cold numbers
+        const frequencyMap = new Map();
+        for (let i = 1; i <= 80; i++) {
+            frequencyMap.set(i, 0);
+        }
+
+        data.forEach(game => {
+            game.numbers.forEach(num => {
+                frequencyMap.set(num, frequencyMap.get(num) + 1);
+            });
+        });
+
+        // Normalize frequencies
+        const maxFrequency = Math.max(...frequencyMap.values());
+        const hotColdMap = new Map();
+        frequencyMap.forEach((freq, num) => {
+            hotColdMap.set(num, freq / maxFrequency);
+        });
+
+        // Process sequential games with rolling windows
+        for (let i = 0; i < data.length - windowSize; i++) {
+            const input = [];
+            // Add rolling window numbers
+            for (let j = 0; j < windowSize; j++) {
+                input.push(...data[i + j].numbers.map(n => n / 80));
+            }
+
+            // Add hot/cold numbers as features
+            input.push(...Array.from(hotColdMap.values()));
+
+            // Add label
+            const nextGame = data[i + windowSize].numbers.map(n => n / 80);
+            inputs.push(input);
+            labels.push(nextGame);
+        }
+
+        console.log('Sample input:', inputs[0]);
+        console.log('Sample label:', labels[0]);
+
+        return {
+            inputs: tf.tensor2d(inputs, [inputs.length, inputs[0].length]),
+            labels: tf.tensor2d(labels, [labels.length, 20])
+        };
+    };
+
+    // Updated Model Architecture
+    async function mainModel2(location) {
+        try {
+            // Get and process the data
+            const kenoData = await processKenoData(`${location}allData`);
+
+            if (!kenoData || kenoData.length === 0) {
+                throw new Error('Failed to load Keno data or empty dataset');
+            }
+
+            console.log('Processed data sample:', kenoData[0]);
+
+            // Preprocess the data
+            const { inputs, labels } = preprocessDataModel2(kenoData);
+
+            console.log('Input tensor shape:', inputs.shape);
+            console.log('Label tensor shape:', labels.shape);
+
+            // Updated model architecture with batch normalization
+            const model = tf.sequential({
+                layers: [
+                    tf.layers.dense({
+                        units: 128,
+                        activation: 'relu',
+                        inputShape: [inputs.shape[1]],
+                        kernelInitializer: 'glorotNormal',
+                        biasInitializer: 'zeros'
+                    }),
+
+                    tf.layers.batchNormalization(),
+
+                    tf.layers.dense({
+                        units: 64,
+                        activation: 'relu',
+                        kernelInitializer: 'glorotNormal',
+                        biasInitializer: 'zeros'
+                    }),
+
+                    tf.layers.batchNormalization(),
+
+                    tf.layers.dense({
+                        units: 20,
+                        activation: 'sigmoid', // Changed to sigmoid for normalized output
+                        kernelInitializer: 'glorotNormal',
+                        biasInitializer: 'zeros'
+                    })
+                ]
+            });
+
+            // Compile the model with improved configuration
+            model.compile({
+                optimizer: 'adam',
+                loss: 'meanSquaredError',
+                metrics: ['mse', 'accuracy']
+            });
+
+            // Print model summary
+            model.summary();
+
+            // Train the model
+            const history = await trainModel(model, inputs, labels, location);
+            console.log('Training completed:', history);
+
+            // Make prediction
+            const results = await predictNextGamesModel2(model, kenoData, 10, location);
+        } catch (error) {
+            console.error('Error in main execution:', error);
+            throw error;
+        }
+    }
+
+
+
+    const predictNextGamesModel2 = async (model, data, numGames = 10, location) => {
+        try {
+            let predictions = [];
+
+            // Use the most recent games as the starting rolling window
+            const initialWindow = data.slice(0, 5); // Adjusted for rolling window size
+            let currentInput = [];
+
+            // Add normalized numbers from the initial window
+            initialWindow.forEach(game => {
+                currentInput.push(...game.numbers.map(n => n / 80));
+            });
+
+            // Add hot/cold numbers as features
+            const frequencyMap = new Map();
+            for (let i = 1; i <= 80; i++) {
+                frequencyMap.set(i, 0);
+            }
+            data.forEach(game => {
+                game.numbers.forEach(num => {
+                    frequencyMap.set(num, frequencyMap.get(num) + 1);
+                });
+            });
+            const maxFrequency = Math.max(...frequencyMap.values());
+            const hotColdFeatures = Array.from(frequencyMap.values()).map(freq => freq / maxFrequency);
+            currentInput.push(...hotColdFeatures);
+
+            // Predict games iteratively
+            for (let i = 0; i < numGames; i++) {
+                const inputTensor = tf.tensor2d([currentInput], [1, currentInput.length]); // Match input shape
+                const prediction = model.predict(inputTensor);
+                const predictionArray = await prediction.array();
+
+                const predictedNumbers = predictionArray[0]
+                    .map(n => Math.round(n * 80)) // Scale back to 1-80
+                    .map(n => Math.max(1, Math.min(80, n)))
+                    .sort((a, b) => a - b);
+
+                predictions.push({
+                    gameNumber: i + 1,
+                    numbers: predictedNumbers
+                });
+
+                // Update currentInput for the next prediction
+                currentInput = currentInput.slice(20); // Remove first game's numbers
+                currentInput.push(...predictedNumbers.map(n => n / 80)); // Add new game's numbers
+            }
+
+            // Add pattern analysis
+            const patternAnalysis = analyzePatterns(data.slice(0, 100)); // Last 100 games
+
+            console.log('Predicted games:', predictions);
+            console.log('Pattern Analysis:', patternAnalysis);
+
+            // Pass predictions and pattern analysis to display function
+            displayModelPredictions(predictions, patternAnalysis, location);
+            return predictions;
+        } catch (error) {
+            console.error('Prediction error:', error);
+            throw error;
+        }
+    };
 
     // Start the application
     // main();

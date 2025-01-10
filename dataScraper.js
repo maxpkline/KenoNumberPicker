@@ -59,14 +59,31 @@ async function scrapeAllDates(url, location, browser) {
     await page.goto(url);
     console.log(`Scraping ${location}...`);
 
+    // Load existing data from file, if available
+    const outputDir = path.resolve(__dirname, './data');
+    const filePath = path.join(outputDir, `${location}AllData.json`);
+    let existingData = {};
+    if (fs.existsSync(filePath)) {
+        console.log(`Loading existing data for ${location}...`);
+        existingData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    }
+
     // Get all available dates from the dropdown
     const dates = await page.$$eval('#ddlDate option', options =>
         options.map(option => ({ date: option.value, selected: option.selected }))
     );
 
-    const allData = {};
+    const allData = { ...existingData }; // Merge new data with existing
 
     for (let { date } of dates) {
+        // Check if date already has data and its entry count
+        const existingEntries = allData[date] ? Object.keys(allData[date]).length : 0;
+
+        if (existingEntries >= 150) {
+            console.log(`Skipping ${date}, already has ${existingEntries} entries.`);
+            continue; // Skip this date
+        }
+
         console.log(`Scraping data for ${date}...`);
 
         // Select a date in the dropdown and wait for the table to reload
@@ -85,15 +102,14 @@ async function scrapeAllDates(url, location, browser) {
             }, {})
         );
 
+        // Overwrite or add the new data for this date
         allData[date] = tableData;
     }
 
-    // Save the collected data
-    const outputDir = path.resolve(__dirname, './data');
+    // Save the updated data back to the file
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
-
-    fs.writeFileSync(path.join(outputDir, `${location}AllData.json`), JSON.stringify(allData, null, 2));
-    console.log(`Data for ${location} saved.`);
+    fs.writeFileSync(filePath, JSON.stringify(allData, null, 2));
+    console.log(`Updated data for ${location} saved.`);
 }
 
 (async () => {
