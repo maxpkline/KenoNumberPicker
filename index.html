@@ -237,7 +237,7 @@
             let trainingLog = document.getElementById(`${location}-training-log`);
             let progressBar = document.getElementById(`${location}-progress-bar`);
 
-            const totalEpochs = 50;
+            const totalEpochs = 25;
 
             const history = await model.fit(inputs, labels, {
                 epochs: totalEpochs,
@@ -552,7 +552,7 @@
             fourNumbers: analyzeCombinations(data.slice(0, 100), 4),
             fiveNumbers: analyzeCombinations(data.slice(0, 100), 5),
             sixNumbers: analyzeCombinations(data.slice(0, 100), 6),
-            // sevenNumbers: analyzeCombinations(data.slice(0, 100), 7),
+            sevenNumbers: analyzeCombinations(data.slice(0, 100), 7),
             // eightNumbers: analyzeCombinations(data.slice(0, 100), 8)
         };
     }
@@ -698,6 +698,12 @@
         addAnalysisSection(
             "Top 6-Number Combinations",
             patternAnalysis.multiCombinations.sixNumbers.topCombos.slice(0, 5),
+            combo => `<strong>Combination:</strong> [${combo.numbers.join(", ")}], Frequency ${combo.frequency}`
+        );
+
+        addAnalysisSection(
+            "Top 7-Number Combinations",
+            patternAnalysis.multiCombinations.sevenNumbers.topCombos.slice(0, 5),
             combo => `<strong>Combination:</strong> [${combo.numbers.join(", ")}], Frequency ${combo.frequency}`
         );
     }

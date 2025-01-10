@@ -446,7 +446,8 @@ function displayCombinationAnalysis(location) {
     table.innerHTML = '';
 
     // Create and append a header
-    const header = document.createElement('h3');
+    const header = document.createElement('div');
+    header.className = 'combination-header header-span';
     header.textContent = `Top Number Combinations for ${location}`;
     table.appendChild(header);
 
@@ -653,7 +654,8 @@ function displayPredictions(location) {
     table.innerHTML = '';
 
     // Create and append a header
-    const header = document.createElement('h3');
+    const header = document.createElement('div');
+    header.className = 'predictions-header header-span';
     header.textContent = `Top Predicted Numbers for ${location}`;
     table.appendChild(header);
 
