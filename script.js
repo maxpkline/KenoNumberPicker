@@ -60,6 +60,11 @@ async function showScreen(screenId) {
     // Show the selected screen
     document.getElementById(screenId).classList.add('active');
 
+    if(screenId === 'payouts') {
+        await showPayouts();
+        return;
+    }
+
     // Call displayData based on the selected screen dynamically
     displayData(locationsData[screenId], screenId);
     console.log(locationsData[screenId + 'Counts']);
@@ -74,6 +79,77 @@ async function showScreen(screenId) {
     // Update the chart with the new location data
     updateChart(screenId);
 }
+
+ async function showPayouts() {
+    const kenoGameNames = {
+        "topBottom": "Top/Bottom & Left/Right",
+        "highRollers": "High Rollers",
+        "winnerTakeAll": "Winner Take All",
+        "20Spot": "20 Spot",
+        "pennyKeno": "Penny Keno",
+        "70sKeno": "70's Keno",
+        "hogWild": "Hog Wild",
+        "quarterMania": "Quarter Mania",
+        "regularKeno": "Regular Keno"
+    }
+    const data = await readData('payoutData');
+    const container = document.getElementById('payouts-table');
+
+    Object.keys(data).forEach((game, index) => {
+        // Create a section for each game type
+        const gameSection = document.createElement('section');
+        gameSection.className = 'game-type';
+
+        // Add game type header
+        const gameHeader = document.createElement('div');
+        gameHeader.className = 'game-header';
+        let gameName = kenoGameNames[game];
+        gameHeader.textContent = gameName || game;
+        gameSection.appendChild(gameHeader);
+
+        // Add denomination info
+        const denomInfo = document.createElement('div');
+        denomInfo.className = 'denomination-info';
+        denomInfo.textContent = `Minimum denomination: $${data[game].denominations.dollar}`;
+        const minimumTicketInfo = document.createElement('div');
+        minimumTicketInfo.className = 'minimum-ticket-info';
+        minimumTicketInfo.textContent = `Minimum Ticket: $${data[game].denominations.minimumBet}`;
+        denomInfo.appendChild(minimumTicketInfo);
+        gameSection.appendChild(denomInfo);
+
+        const payoutTable = document.createElement('div');
+        payoutTable.className = 'payout-table';
+
+        Object.keys(data[game].payouts).forEach(spot => {
+            const spotSection = document.createElement('div');
+            spotSection.className = 'spot-section';
+            const spotHeader = document.createElement('div');
+            spotHeader.className = 'spot-header';
+            spotHeader.textContent = `Pick ${spot}`;
+            spotSection.appendChild(spotHeader);
+
+            let checkedOnce = false;
+
+            Object.entries(data[game].payouts[spot]).reverse().forEach(([matches, payout]) => {
+                const payoutDiv = document.createElement('div');
+                payoutDiv.className = 'payout-entry';
+                if(!checkedOnce) {
+                    checkedOnce = true;
+                    payoutDiv.textContent = `Hit \t ${matches}: \t ${payout || payout.toFixed(2)}`;
+                    spotSection.appendChild(payoutDiv);
+                } else {
+                    payoutDiv.textContent = `\t ${matches}: \t ${payout || payout.toFixed(2)}`;
+                    spotSection.appendChild(payoutDiv);
+                }
+
+            });
+            payoutTable.appendChild(spotSection);
+        });
+        gameSection.appendChild(payoutTable);
+        container.appendChild(gameSection);
+    });
+
+ }
 
 // Function to read JSON data of current day keno games from data folder
 async function readData(location) {

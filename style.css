@@ -172,6 +172,62 @@
     margin-bottom: 5px;
 }
 
+.payouts-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+.game-type {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.game-header {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.denomination-info {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.minimum-ticket-info {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.spot-header {
+    text-align: start;
+    font-size: 20px;
+    margin-top: 20px;
+}
+
+.payout-table {
+    text-align: start;
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-top: 30px;
+    padding-bottom: 50px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.payout-entry {
+    white-space: pre;
+}
+
 
 
 .screen.active {

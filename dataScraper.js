@@ -79,7 +79,22 @@ async function scrapeAllDates(url, location, browser) {
         // Check if date already has data and its entry count
         const existingEntries = allData[date] ? Object.keys(allData[date]).length : 0;
 
-        if (existingEntries >= 150) {
+        if (existingEntries >= 190 && location === 'omaha') {
+            console.log(`Skipping ${date}, already has ${existingEntries} entries.`);
+            continue; // Skip this date
+        } else if (existingEntries >= 190 && location === 'lincoln') {
+            console.log(`Skipping ${date}, already has ${existingEntries} entries.`);
+            continue; // Skip this date
+        } else if (existingEntries >= 160 && location === 'fremont') {
+            console.log(`Skipping ${date}, already has ${existingEntries} entries.`);
+            continue; // Skip this date
+        } else if(existingEntries >= 160 && location === 'norfolk') {
+            console.log(`Skipping ${date}, already has ${existingEntries} entries.`);
+            continue; // Skip this date
+        } else if (existingEntries >= 190 && location === 'blair') {
+            console.log(`Skipping ${date}, already has ${existingEntries} entries.`);
+            continue; // Skip this date
+        } else if (existingEntries >= 200 && location === 'beatrice') {
             console.log(`Skipping ${date}, already has ${existingEntries} entries.`);
             continue; // Skip this date
         }

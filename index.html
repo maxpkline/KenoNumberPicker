@@ -20,6 +20,7 @@
     <button id="norfolkButton" class="button" onclick="showScreen('norfolk')">Norfolk</button>
     <button id="blairButton" class="button" onclick="showScreen('blair')">Blair</button>
     <button id="beatriceButton" class="button" onclick="showScreen('beatrice')">Beatrice</button>
+    <button id="payoutsButton" class="button" onclick="showScreen('payouts')">Payouts</button>
 </div>
 
 <div id="screenContainer">
@@ -115,6 +116,11 @@
         <button id="beatrice-trainButton" class="button" onclick="main('beatrice')">Model 1</button>
         <button id="beatrice-trainButton1" class="button" onclick="mainModel2('beatrice')">Model 2</button>
 
+    </div>
+
+    <div id="payouts" class="screen">
+        <div id="payouts-title" class = "keno-title">Keno Payouts</div>
+        <div id="payouts-table" class="payouts-table"></div>
     </div>
 </div>
 <script src="script.js"></script>
@@ -708,6 +714,21 @@
         );
     }
 
+    const createOptimizer = (type, config) => {
+        switch (type) {
+            case 'adam':
+                return tf.train.adam(config.learningRate, config.beta1, config.beta2, config.epsilon);
+            case 'adamax':
+                return tf.train.adamax(config.learningRate, config.beta1, config.beta2, config.epsilon);
+            case 'adadelta':
+                return tf.train.adadelta(config.learningRate, config.rho, config.epsilon);
+            case 'rmsprop':
+                return tf.train.rmsprop(config.learningRate, config.decay, config.momentum, config.epsilon);
+            default:
+                return tf.train.adam(0.001); // Default optimizer
+        }
+    };
+
     async function main(location) {
         try {
             // Get and process the data
@@ -725,6 +746,13 @@
             console.log('Input tensor shape:', inputs.shape);
             console.log('Label tensor shape:', labels.shape);
 
+            const optimizer = createOptimizer('rmsprop', {
+                learningRate: 0.001,
+                beta1: 0.9,
+                beta2: 0.999,
+                epsilon: 1e-7
+            });
+
             // Create the model with proper initialization
             const model = tf.sequential({
                 layers: [
@@ -733,18 +761,21 @@
                         activation: 'relu',
                         inputShape: [20],
                         kernelInitializer: 'glorotNormal',
+                        kernelRegularizer: tf.regularizers.l2({ l2: 0.01 }),
                         biasInitializer: 'zeros'
                     }),
-
+                    tf.layers.dropout({ rate: 0.3 }),
                     tf.layers.batchNormalization(),
 
                     tf.layers.dense({
                         units: 64,
                         activation: 'relu',
                         kernelInitializer: 'glorotNormal',
+                        kernelRegularizer: tf.regularizers.l2({ l2: 0.01 }),
                         biasInitializer: 'zeros'
                     }),
 
+                    tf.layers.dropout({ rate: 0.2 }),
                     tf.layers.batchNormalization(),
 
                     tf.layers.dense({
@@ -758,7 +789,7 @@
 
             // Compile with proper configuration
             model.compile({
-                optimizer: 'adam',
+                optimizer: optimizer,
                 loss: 'meanSquaredError',
                 metrics: ['mse', 'accuracy']
             });
@@ -851,6 +882,13 @@
             console.log('Input tensor shape:', inputs.shape);
             console.log('Label tensor shape:', labels.shape);
 
+            const optimizer = createOptimizer('adamax', {
+                learningRate: 0.0005,
+                beta1: 0.9,
+                beta2: 0.999,
+                epsilon: 1e-7
+            });
+
             // Updated model architecture with batch normalization
             const model = tf.sequential({
                 layers: [
@@ -859,18 +897,22 @@
                         activation: 'relu',
                         inputShape: [inputs.shape[1]],
                         kernelInitializer: 'glorotNormal',
+                        kernelRegularizer: tf.regularizers.l2({ l2: 0.01 }),
                         biasInitializer: 'zeros'
                     }),
 
+                    tf.layers.dropout({ rate: 0.3 }),
                     tf.layers.batchNormalization(),
 
                     tf.layers.dense({
                         units: 64,
                         activation: 'relu',
                         kernelInitializer: 'glorotNormal',
+                        kernelRegularizer: tf.regularizers.l2({ l2: 0.01 }),
                         biasInitializer: 'zeros'
                     }),
 
+                    tf.layers.dropout({ rate: 0.2 }),
                     tf.layers.batchNormalization(),
 
                     tf.layers.dense({
@@ -882,17 +924,14 @@
                 ]
             });
 
-            // Compile the model with improved configuration
             model.compile({
-                optimizer: 'adam',
+                optimizer: optimizer,
                 loss: 'meanSquaredError',
                 metrics: ['mse', 'accuracy']
             });
 
-            // Print model summary
             model.summary();
 
-            // Train the model
             const history = await trainModel(model, inputs, labels, location);
             console.log('Training completed:', history);
 
