@@ -120,9 +120,49 @@
 
     <div id="payouts" class="screen">
         <div id="payouts-title" class = "keno-title">Keno Payouts</div>
+        <div id="payout-explanation-dropdown" class="payout-explanation">
+            <p>Figure out the best way to maximize your probability of winning! Each game is different and offers different payouts, so make sure to choose what best suits your playstyle. The minimum denominations is the bet you place for each game on a ticket, and minimum tickets refer to the total amount you have to bet for the ticket to be valid.</p>
+        </div>
         <div id="payouts-table" class="payouts-table"></div>
     </div>
 </div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modal-title"></h2>
+        <div id="modal-body">
+            <!-- For Calculate Payout -->
+            <div id="payout-calculator" style="display: none;">
+                <div class="input-group">
+                    <label for="spot-count">Number of Spots:</label>
+                    <select id="spot-count"></select>
+                </div>
+                <div class="input-group">
+                    <label for="bet-amount">Bet Per Game ($):</label>
+                    <input type="number" id="bet-amount" min="0" step="0.01">
+                    <label for="game-amount">Number of Games:</label>
+                    <input type="number" id="game-amount" min="0" step="0.01">
+                </div>
+                <button class="button" onclick="calculatePotentialPayouts()">Calculate</button>
+                <div id="payout-results"></div>
+            </div>
+
+            <!-- For Generate Picks -->
+            <div id="picks-generator" style="display: none;">
+                <div class="input-group">
+                    <label for="number-of-picks">Number of Picks:</label>
+                    <input type="number" id="number-of-picks" min="1" max="10" value="1">
+                    <label for="numbers-to-bet">Numbers to Bet:</label>
+                    <input type="number" id="numbers-to-bet" min="1" max="20" value="1">
+                </div>
+                <button class="button" onclick="generateNumberPicks()">Generate</button>
+                <div id="picks-results"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="script.js"></script>
 <script>
 

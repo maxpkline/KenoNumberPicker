@@ -80,18 +80,187 @@ async function showScreen(screenId) {
     updateChart(screenId);
 }
 
- async function showPayouts() {
-    const kenoGameNames = {
-        "topBottom": "Top/Bottom & Left/Right",
-        "highRollers": "High Rollers",
-        "winnerTakeAll": "Winner Take All",
-        "20Spot": "20 Spot",
-        "pennyKeno": "Penny Keno",
-        "70sKeno": "70's Keno",
-        "hogWild": "Hog Wild",
-        "quarterMania": "Quarter Mania",
-        "regularKeno": "Regular Keno"
+const kenoGameNames = {
+    "topBottom": "Top/Bottom & Left/Right",
+    "highRollers": "High Rollers",
+    "winnerTakeAll": "Winner Take All",
+    "20Spot": "20 Spot",
+    "pennyKeno": "Penny Keno",
+    "70sKeno": "70's Keno",
+    "hogWild": "Hog Wild",
+    "quarterMania": "Quarter Mania",
+    "regularKeno": "Regular Keno"
+};
+
+let currentGame = '';
+let currentPayoutData = null;
+
+function calculatePayouts(kenoGameType) {
+    currentGame = kenoGameType;
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const payoutCalculator = document.getElementById('payout-calculator');
+    const picksGenerator = document.getElementById('picks-generator');
+
+    modalTitle.textContent = `Calculate Payouts - ${kenoGameNames[kenoGameType]}`;
+    payoutCalculator.style.display = 'block';
+    picksGenerator.style.display = 'none';
+
+    // Populate spot count dropdown based on game type
+    const spotSelect = document.getElementById('spot-count');
+    spotSelect.innerHTML = '';
+
+    readData('payoutData').then(data => {
+        currentPayoutData = data[kenoGameType];
+        Object.keys(data[kenoGameType].payouts).forEach(spot => {
+            const option = document.createElement('option');
+            option.value = spot;
+            option.textContent = `${spot} Spot`;
+            spotSelect.appendChild(option);
+        });
+    });
+
+    modal.style.display = 'block';
+}
+
+function calculatePotentialPayouts() {
+    const spotCount = document.getElementById('spot-count').value;
+    const betAmount = parseFloat(document.getElementById('bet-amount').value);
+    const numGames = parseInt(document.getElementById('game-amount').value);
+    const resultsDiv = document.getElementById('payout-results');
+
+    if (!betAmount || betAmount < currentPayoutData.denominations.minimumBet && betAmount*numGames < currentPayoutData.denominations.minimumBet) {
+        resultsDiv.innerHTML = `Minimum bet amount is $${currentPayoutData.denominations.minimumBet}`;
+        return;
     }
+
+    const payouts = currentPayoutData.payouts[spotCount];
+    let resultsHTML = '<div>Potential Payouts: \n\n</div>';
+    resultsHTML.className = 'payout-results';
+    // resultsHTML.style.whiteSpace = 'pre';
+
+    Object.entries(payouts).reverse().forEach(([matches, basePayout]) => {
+        const payout = basePayout * betAmount / currentPayoutData.denominations.dollar;
+        const actualPayout = Number.isInteger(payout) ? payout : payout.toFixed(2);
+        console.log('matches:', matches);
+        console.log('spotCount:', spotCount);
+
+        const singleGameProb = probabilityOfHitting(parseInt(matches), parseInt(spotCount));
+        let probOfHitting = 0;
+        if (numGames > 1) {
+            const probAtLeastOnce = probabilityAcrossGames(parseInt(matches), parseInt(spotCount), numGames);
+            probOfHitting = probAtLeastOnce < 1e-3 ?
+                probAtLeastOnce.toExponential(2) + "%" :
+                (probAtLeastOnce * 100).toFixed(2) + "%";
+        } else {
+            probOfHitting = singleGameProb < 1e-3 ?
+                singleGameProb.toExponential(2) + "%" :
+                (singleGameProb * 100).toFixed(2) + "%";
+        }
+
+        console.log(probOfHitting);
+        resultsHTML += `<div>Hit ${matches}: $${actualPayout} \tProbability: ${probOfHitting}</div>`;
+    });
+
+    resultsDiv.innerHTML = resultsHTML;
+}
+
+// function to calculate probability of hitting single game
+function probabilityOfHitting(matches, spotCount) {
+    // Function to calculate combinations (n choose k)
+    function combinations(n, k) {
+        if (k > n) return 0;
+        if (k === 0 || k === n) return 1;
+
+        let result = 1;
+        for (let i = 1; i <= k; i++) {
+            result *= (n - i + 1) / i;
+        }
+        return result;
+    }
+
+    // Total numbers in keno game
+    const totalNumbers = 80;
+    // Numbers drawn each round
+    const numbersDrawn = 20;
+
+    // Calculate probability using hypergeometric distribution
+    // P(X = matches) = [C(numbersDrawn, matches) * C(totalNumbers - numbersDrawn, spotCount - matches)] / C(totalNumbers, spotCount)
+
+    const numerator = combinations(numbersDrawn, matches) *
+        combinations(totalNumbers - numbersDrawn, spotCount - matches);
+    const denominator = combinations(totalNumbers, spotCount);
+
+    // Handle edge cases
+    if (denominator === 0) return 0;
+    if (matches > spotCount) return 0;
+    if (matches > numbersDrawn) return 0;
+    if (spotCount > totalNumbers) return 0;
+
+    return numerator / denominator;
+}
+
+function probabilityAcrossGames(matches, spotCount, numGames) {
+    const singleGameProb = probabilityOfHitting(matches, spotCount);
+
+    // Calculate probability of NOT hitting in any game
+    const probNone = Math.pow(1 - singleGameProb, numGames);
+
+    // Return probability of hitting at least once
+    return 1 - probNone;
+}
+
+function generatePicks(kenoGameType) {
+    currentGame = kenoGameType;
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const payoutCalculator = document.getElementById('payout-calculator');
+    const picksGenerator = document.getElementById('picks-generator');
+
+    modalTitle.textContent = `Generate Picks - ${kenoGameNames[kenoGameType]}`;
+    payoutCalculator.style.display = 'none';
+    picksGenerator.style.display = 'block';
+
+    modal.style.display = 'block';
+}
+
+function generateNumberPicks() {
+    const numberOfPicks = parseInt(document.getElementById('number-of-picks').value);
+    const resultsDiv = document.getElementById('picks-results');
+
+    // Example implementation - you'll want to modify this based on your game rules
+    let resultsHTML = '<h3>Generated Picks:</h3>';
+
+    for (let i = 0; i < numberOfPicks; i++) {
+        const numbers = new Set();
+        while (numbers.size < 20) { // Assuming 20 numbers per pick
+            numbers.add(Math.floor(Math.random() * 80) + 1);
+        }
+        resultsHTML += `<div>Pick ${i + 1}: ${Array.from(numbers).sort((a, b) => a - b).join(', ')}</div>`;
+    }
+
+    resultsDiv.innerHTML = resultsHTML;
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modal');
+    const closeBtn = document.getElementsByClassName('close')[0];
+
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+});
+
+
+
+ async function showPayouts() {
     const data = await readData('payoutData');
     const container = document.getElementById('payouts-table');
 
@@ -117,6 +286,25 @@ async function showScreen(screenId) {
         denomInfo.appendChild(minimumTicketInfo);
         gameSection.appendChild(denomInfo);
 
+        // add buttons for each game type
+        const buttonsDiv = document.createElement('div');
+        buttonsDiv.className = 'payout-buttons-div';
+
+        const calculatePayoutButton = document.createElement('button');
+        calculatePayoutButton.className = 'button';
+        calculatePayoutButton.onclick = () => calculatePayouts(game);
+        calculatePayoutButton.textContent = 'Calculate Payout';
+
+        const generatePicksButton = document.createElement('button');
+        generatePicksButton.className = 'button';
+        generatePicksButton.onclick = () => generatePicks(game);
+        generatePicksButton.textContent = 'Generate Picks';
+
+        buttonsDiv.appendChild(calculatePayoutButton);
+        buttonsDiv.appendChild(generatePicksButton);
+
+        gameSection.appendChild(buttonsDiv);
+
         const payoutTable = document.createElement('div');
         payoutTable.className = 'payout-table';
 
@@ -135,10 +323,10 @@ async function showScreen(screenId) {
                 payoutDiv.className = 'payout-entry';
                 if(!checkedOnce) {
                     checkedOnce = true;
-                    payoutDiv.textContent = `Hit \t ${matches}: \t ${payout || payout.toFixed(2)}`;
+                    payoutDiv.textContent = `Hit \t ${matches}: \t $ ${payout || payout.toFixed(2)}`;
                     spotSection.appendChild(payoutDiv);
                 } else {
-                    payoutDiv.textContent = `\t ${matches}: \t ${payout || payout.toFixed(2)}`;
+                    payoutDiv.textContent = `\t ${matches}: \t $ ${payout || payout.toFixed(2)}`;
                     spotSection.appendChild(payoutDiv);
                 }
 
@@ -148,7 +336,6 @@ async function showScreen(screenId) {
         gameSection.appendChild(payoutTable);
         container.appendChild(gameSection);
     });
-
  }
 
 // Function to read JSON data of current day keno games from data folder
