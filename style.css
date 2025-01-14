@@ -1,17 +1,55 @@
-.header {
-    padding: 20px;
-    text-align: center;
+@font-face {
+    font-family: Keno;
+    src: url('fonts/Keno.ttf');
+    font-weight: normal;
+    font-style: normal;
 }
 
-.body {
-    width: 100%;
+
+
+body {
+    background-color: #9a3d3d;
+}
+
+.header {
+    display:grid;
+    grid-template-columns: 1fr 2fr;
+    text-align: center;
+    border-radius: 20px;
+    column-gap: 0;
+}
+
+.logo{
+    display:grid;
+    grid-template-columns: 2fr 2fr;
+    padding: 20px;
+    margin-top: 5px;
+    color: #ffffff;
+}
+
+.logo h1 {
+    font-family: Keno, serif;
+    margin: 0;
+    text-align: end;
+    font-size: 55px;
+
+}
+
+.logo h2 {
+    font-family: Keno, serif;
+    margin: 0;
+    font-size: 26px;
+    text-align: start;
 }
 
 .screen {
     display: none;
     padding: 20px;
     border: 1px solid #ccc;
-    margin: 10px 0;
+    border-radius: 20px;
+    width:90%;
+    margin: 10px auto;
+    background-color: rgba(255, 255, 255, 0.9);
 }
 
 .keno-title {
@@ -104,7 +142,7 @@
 
 .streak-header {
     margin-top: 20px;
-    grid-column: span 5;
+    grid-column: span 10;
     text-align: center;
     font-size: 24px;
     margin-bottom: 20px;
@@ -114,7 +152,7 @@
 .streaks-table {
     margin-top: 20px;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     gap: 10px;
 }
 
@@ -249,30 +287,42 @@
 }
 
 .nav-buttons {
-    margin-bottom: 20px;
     display: flex;
-    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding: 20px;
+    border-radius: 20px;
+    margin: 10px auto;
+    background-color: #ffffff;
 }
 
 button {
     padding: 10px 20px;
     margin-right: 10px;
     cursor: pointer;
-    background-color: #4CAF50;
+    background-color: #9a3d3d;
     color: white;
     border: none;
     border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #2aa1d3;
+    transform: scale(1.05); /* Slightly enlarges the button */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Adds a shadow effect */
 }
 
 .button-selected {
     background-color: #2e0c47;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
+
 .button-selected:hover {
     background-color: #4d1575;
+    transform: scale(1.1); /* Slightly enlarges the button */
 }
 
 
@@ -316,7 +366,7 @@ button:hover {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #4CAF50;
+    background: #2899c8;
 }
 
 
@@ -476,4 +526,45 @@ button:hover {
     border: 1px solid #ddd;
     border-radius: 4px;
 }
+
+
+
+
+
+
+
+
+
+.bubbles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Prevent interaction with bubbles */
+    overflow: hidden;
+    z-index: 0; /* Ensure it stays in the background */
+}
+
+.bubbles div {
+    position: absolute;
+    bottom: 0;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    animation: float 6s infinite ease-in;
+}
+
+@keyframes float {
+    from {
+        transform: translateY(0) scale(0.8);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-100vh) scale(1.5);
+        opacity: 0;
+    }
+}
+
 

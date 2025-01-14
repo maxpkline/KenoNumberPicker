@@ -985,7 +985,7 @@ function analyzeStreaks(location) {
 // Function to display streaks
 function displayStreaks(location) {
     const predictions = analyzeStreaks(location);
-    const trimmedPreds = predictions.slice(0, 10);
+    const trimmedPreds = predictions.slice(0, 20);
     const table = document.getElementById(location + '-streaks-table');
     table.style.display = 'grid';
 
@@ -1474,3 +1474,33 @@ function displayAllDataCoOccurences(location) {
 
     return predictions;
 }
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const bubbleContainer = document.querySelector(".bubbles");
+
+    function createBubble() {
+        const bubble = document.createElement("div");
+        const size = Math.random() * 30 + 10; // Random size between 10 and 30
+        const position = Math.random() * 100; // Random horizontal position
+        const delay = Math.random() * 5; // Random animation delay
+        const duration = Math.random() * 5 + 5; // Random animation duration
+
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        bubble.style.left = `${position}%`;
+        bubble.style.animationDuration = `${duration}s`;
+        bubble.style.animationDelay = `${delay}s`;
+
+        bubbleContainer.appendChild(bubble);
+
+        // Remove bubble after its animation
+        setTimeout(() => bubble.remove(), (duration + delay) * 1000);
+    }
+
+    setInterval(createBubble, 300); // Add new bubbles every 500ms
+});
+
