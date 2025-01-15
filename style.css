@@ -5,6 +5,19 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: MusefulRegular;
+    src: url('fonts/MusefulRegular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: Guarantee;
+    src: url('fonts/gGuarantee.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
 
 
 body {
@@ -45,25 +58,27 @@ body {
 .screen {
     display: none;
     padding: 20px;
-    border: 1px solid #ccc;
+    /*border: 1px solid #ccc;*/
     border-radius: 20px;
     width:90%;
     margin: 10px auto;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(236, 236, 234, 0);
 }
 
 .keno-title {
+    font-family: Keno, serif;
     text-align: center;
-    font-size: 24px;
+    font-size: 30px;
     margin-bottom: 20px;
 }
 
 .keno-table {
+    font-family: Guarantee, serif;
     display: grid;
     grid-template-columns: 1fr 6fr 2fr;
     text-align: center;
-    max-width: 900px;
-    min-width: 75px;
+    /*max-width: 900px;*/
+    /*min-width: 75px;*/
     margin: auto;
     border: 1px solid #ccc;
     padding: 10px;
@@ -73,7 +88,27 @@ body {
     gap: 10px; /* Adds spacing between grid cells */
 }
 
+.keno-header{
+    font-family: Keno, serif;
+    margin-top: 20px;
+    grid-column: span 3;
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    width: 100%;
+    background-color: #2e0c47;
+    border: none;
+}
+
+.kenoChart {
+    margin: 10px;
+    padding: 10px;
+    border-radius: 20px;
+    background-color: #f9f9f9;
+}
+
 .combination-header {
+    font-family: Keno, serif;
     margin-top: 20px;
     grid-column: span 5;
     text-align: center;
@@ -83,32 +118,45 @@ body {
 }
 
 .combination-table {
+    background-color: rgb(236, 236, 234);
+    border: 1px solid #ccc;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     gap: 10px;
+    margin:10px;
+    padding:10px;
+    border-radius: 20px;
 }
 .combination-entry {
+    font-family: Guarantee, serif;
     padding: 10px;
     width: 90%;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 20px;
     background-color: #f9f9f9;
 }
 
 .predictions-table {
+    background-color: rgb(236, 236, 234);
+    border: 1px solid #ccc;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     gap: 10px;
+    margin:10px;
+    padding:10px;
+    border-radius: 20px;
 }
 .prediction-entry {
+    font-family: Guarantee, serif;
     padding: 10px;
     width: 90%;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #eef7ff;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background-color: #f9f9f9;
 }
 
 .predictions-header {
+    font-family: Keno, serif;
     margin-top: 20px;
     grid-column: span 5;
     text-align: center;
@@ -118,6 +166,7 @@ body {
 }
 
 .cooccurrence-header {
+    font-family: Keno, serif;
     margin-top: 20px;
     grid-column: span 5;
     text-align: center;
@@ -127,20 +176,27 @@ body {
 }
 
 .cooccurrence-table {
+    background-color: rgb(236, 236, 234);
+    border: 1px solid #ccc;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     gap: 10px;
+    margin:10px;
+    padding:10px;
+    border-radius: 20px;
 }
 .cooccurrence-entry {
+    font-family: Guarantee, serif;
     text-align: center;
     padding: 10px;
     width: 90%;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 20px;
     background-color: #f6f6f6;
 }
 
 .streak-header {
+    font-family: Keno, serif;
     margin-top: 20px;
     grid-column: span 10;
     text-align: center;
@@ -150,17 +206,22 @@ body {
 }
 
 .streaks-table {
+    background-color: rgb(236, 236, 234);
+    border: 1px solid #ccc;
     margin-top: 20px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     gap: 10px;
+    padding:10px;
+    border-radius: 20px;
 }
 
 .streak-entry {
+    font-family: Guarantee, serif;
     text-align: center;
     padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 20px;
     background-color: #f9f9f9;
 }
 
@@ -298,6 +359,8 @@ body {
 }
 
 button {
+    font-family: MusefulRegular, serif;
+    position: relative; /* Ensures the pseudo-element aligns with the button */
     padding: 10px 20px;
     margin-right: 10px;
     cursor: pointer;
@@ -305,12 +368,37 @@ button {
     color: white;
     border: none;
     border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden; /* Hides the pseudo-element outside the button bounds */
+    transition: color 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+button::before {
+    content: " ";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: hsl(0, 43%, 50%); /* The color for the animation */
+    transform: scaleX(0); /* Start with no visible width */
+    transform-origin: bottom right;
+    transition: transform 0.5s ease;
+    z-index: -1; /* Sends the pseudo-element behind the button text */
+}
+
+button:hover::before {
+    transform: scaleX(1); /* Expands the pseudo-element horizontally */
+    transform-origin: bottom left;
 }
 
 button:hover {
-    background-color: #2aa1d3;
+    color: #ffffff;
+}
+
+
+button:hover {
+    background-color: #712D2DFF;
     transform: scale(1.05); /* Slightly enlarges the button */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Adds a shadow effect */
 }
@@ -362,7 +450,7 @@ button:hover {
 .toggle-indicator {
     position: absolute;
     top: 10px;
-    right: 10px;
+    right: 20px;
     width: 20px;
     height: 20px;
     border-radius: 50%;

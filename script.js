@@ -1,15 +1,15 @@
-document.addEventListener('DOMContentLoaded', function () {
+async function loadToggleState(location) {
     const divs = [
-        'omaha-keno-title',
-        'omaha-keno-table',
-        'omaha-kenoChart',
-        'omaha-combination-table',
-        'omaha-predictions-table',
-        'omaha-cooccurrence-table',
-        'omaha-cooccurrence-table-all-data',
-        'omaha-streaks-table',
-        'omaha-model-training',
-        'omaha-model-prediction'
+        // `${location}-keno-title`,
+        `${location}-keno-table`,
+        `${location}-kenoChart`,
+        `${location}-combination-table`,
+        `${location}-predictions-table`,
+        `${location}-cooccurrence-table`,
+        `${location}-cooccurrence-table-all-data`,
+        `${location}-streaks-table`,
+        `${location}-model-training`,
+        `${location}-model-prediction`
     ];
 
     divs.forEach(divId => {
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     });
-});
+}
 
 async function showScreen(screenId) {
     const buttons = document.getElementsByClassName('button');
@@ -76,6 +76,9 @@ async function showScreen(screenId) {
     // Display all data statistics
     displayAllDataCoOccurences(screenId);
 
+
+    // Update the toggle states
+    await loadToggleState(screenId);
     // Update the chart with the new location data
     updateChart(screenId);
 }
@@ -433,6 +436,7 @@ async function loadData() {
 
         // Display all data statistics
         displayAllDataCoOccurences('omaha');
+        await loadToggleState('omaha');
     } catch (error) {
         console.error("Error loading data: ", error);
     }
@@ -448,6 +452,11 @@ function displayData(data, location) {
 
     // Clear any existing content
     table.innerHTML = '';
+
+    const header = document.createElement('div');
+    header.className = 'keno-header header-span';
+    header.textContent = `Most Recent Games for ${location}`;
+    table.appendChild(header);
 
     // Create div for game numbers
     const gameNumbersDiv = document.createElement('div');
@@ -472,6 +481,17 @@ function displayData(data, location) {
     locationCounts.appendChild(hotNumbersTitle);
 
     hotNumbers.forEach((countInfo) => {
+        const countElement = document.createElement('p');
+        countElement.textContent = `Number ${countInfo.number}: ${countInfo.count} occurrences`;
+        locationCounts.appendChild(countElement);
+    });
+
+    const coldNumbers = locationsData[location + 'Counts'].slice(75, 90); // Get the hot numbers dynamically
+    const coldNumbersTitle = document.createElement('h3');
+    coldNumbersTitle.textContent = 'Cold Numbers';
+    locationCounts.appendChild(coldNumbersTitle);
+
+    coldNumbers.forEach((countInfo) => {
         const countElement = document.createElement('p');
         countElement.textContent = `Number ${countInfo.number}: ${countInfo.count} occurrences`;
         locationCounts.appendChild(countElement);
@@ -1478,16 +1498,16 @@ function displayAllDataCoOccurences(location) {
 
 
 
-
+// Animation Code
 document.addEventListener("DOMContentLoaded", () => {
     const bubbleContainer = document.querySelector(".bubbles");
 
     function createBubble() {
         const bubble = document.createElement("div");
-        const size = Math.random() * 30 + 10; // Random size between 10 and 30
-        const position = Math.random() * 100; // Random horizontal position
-        const delay = Math.random() * 5; // Random animation delay
-        const duration = Math.random() * 5 + 5; // Random animation duration
+        const size = Math.random() * 30 + 10;
+        const position = Math.random() * 100;
+        const delay = 0; // Math.random() * 5;
+        const duration = Math.random() * 5 + 5;
 
         bubble.style.width = `${size}px`;
         bubble.style.height = `${size}px`;
