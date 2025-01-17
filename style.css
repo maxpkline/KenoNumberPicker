@@ -66,13 +66,27 @@ body {
 }
 
 .keno-title {
+    color: #ffffff;
     font-family: Keno, serif;
     text-align: center;
     font-size: 30px;
     margin-bottom: 20px;
 }
 
+.keno-header {
+    font-family: Keno, serif;
+    margin-top: 20px;
+    grid-column: span 3;
+    text-align: center;
+    font-size: 50px;
+    margin-bottom: 20px;
+    width: 100%;
+    background-color: #2e0c47;
+    border: none;
+}
+
 .keno-table {
+    width: 100%;
     font-family: Guarantee, serif;
     display: grid;
     grid-template-columns: 1fr 6fr 2fr;
@@ -80,24 +94,37 @@ body {
     /*max-width: 900px;*/
     /*min-width: 75px;*/
     margin: auto;
-    border: 1px solid #ccc;
+    /*border: 1px solid #ccc;*/
     padding: 10px;
-    background-color: #f9f9f9; /* Optional: Adds a background for better styling */
-    border-radius: 5px; /* Optional: Adds rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Adds subtle shadow */
-    gap: 10px; /* Adds spacing between grid cells */
+    background-color: #f9f9f9;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    gap: 10px;
 }
 
-.keno-header{
-    font-family: Keno, serif;
-    margin-top: 20px;
-    grid-column: span 3;
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 20px;
-    width: 100%;
-    background-color: #2e0c47;
-    border: none;
+
+.game-numbers {
+    font-family: Guarantee, serif;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background-color: #f9f9f9;
+}
+
+.game-data {
+    font-family: Guarantee, serif;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background-color: #f9f9f9;
+}
+
+.location-counts {
+    font-family: Guarantee, serif;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background-color: #f9f9f9;
 }
 
 .kenoChart {
@@ -226,8 +253,8 @@ body {
 }
 
 .keno-table > * {
-    border: 1px solid #ccc; /* Adds border to each grid item */
-    background-color: #fff; /* Ensures grid items have a white background */
+    border: 1px solid #ccc;
+    background-color: #fff;
 }
 
 .model-prediction {
@@ -360,7 +387,7 @@ body {
 
 button {
     font-family: MusefulRegular, serif;
-    position: relative; /* Ensures the pseudo-element aligns with the button */
+    position: relative;
     padding: 10px 20px;
     margin-right: 10px;
     cursor: pointer;
@@ -368,7 +395,7 @@ button {
     color: white;
     border: none;
     border-radius: 4px;
-    overflow: hidden; /* Hides the pseudo-element outside the button bounds */
+    overflow: hidden;
     transition: color 0.3s ease;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
@@ -380,15 +407,15 @@ button::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: hsl(0, 43%, 50%); /* The color for the animation */
-    transform: scaleX(0); /* Start with no visible width */
+    background: hsl(0, 43%, 50%);
+    transform: scaleX(0);
     transform-origin: bottom right;
     transition: transform 0.5s ease;
-    z-index: -1; /* Sends the pseudo-element behind the button text */
+    z-index: -1;
 }
 
 button:hover::before {
-    transform: scaleX(1); /* Expands the pseudo-element horizontally */
+    transform: scaleX(1);
     transform-origin: bottom left;
 }
 
@@ -399,8 +426,8 @@ button:hover {
 
 button:hover {
     background-color: #712D2DFF;
-    transform: scale(1.05); /* Slightly enlarges the button */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Adds a shadow effect */
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .button-selected {
@@ -410,7 +437,7 @@ button:hover {
 
 .button-selected:hover {
     background-color: #4d1575;
-    transform: scale(1.1); /* Slightly enlarges the button */
+    transform: scale(1.1);
 }
 
 
@@ -454,7 +481,11 @@ button:hover {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #2899c8;
+    background: #9a3d3d;
+}
+
+.toggle-indicator.collapsed {
+    background: #dc9a9a;
 }
 
 
@@ -467,7 +498,8 @@ button:hover {
 
 .training-status {
     padding: 15px;
-    border: 1px solid #ddd;
+    background-color: rgb(236, 236, 234);
+    border: 1px solid #ccc;
     border-radius: 8px;
     margin: 10px 0;
 }
@@ -629,9 +661,9 @@ button:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Prevent interaction with bubbles */
+    pointer-events: none;
     overflow: hidden;
-    z-index: 0; /* Ensure it stays in the background */
+    z-index: 0;
 }
 
 .bubbles div {
@@ -655,4 +687,19 @@ button:hover {
     }
 }
 
+@keyframes flyIn {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.fly-in {
+    opacity: 0;
+    animation: flyIn 1s ease-out forwards;
+}
 

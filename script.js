@@ -34,13 +34,32 @@ async function loadToggleState(location) {
                 e.stopPropagation();
                 if (this.classList.contains('collapsed')) {
                     this.classList.remove('collapsed');
+                    indicator.classList.remove('collapsed');
                 } else {
                     this.classList.add('collapsed');
+                    indicator.classList.add('collapsed');
                 }
             });
         }
     });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("fly-in");
+                observer.unobserve(entry.target); // Optional: Stop observing once animated
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+
+    document.querySelectorAll(".screen").forEach(div => {
+        observer.observe(div);
+    });
+});
 
 async function showScreen(screenId) {
     const buttons = document.getElementsByClassName('button');
@@ -453,13 +472,14 @@ function displayData(data, location) {
     // Clear any existing content
     table.innerHTML = '';
 
-    const header = document.createElement('div');
+    const header = document.createElement('h3');
     header.className = 'keno-header header-span';
     header.textContent = `Most Recent Games for ${location}`;
     table.appendChild(header);
 
     // Create div for game numbers
     const gameNumbersDiv = document.createElement('div');
+    gameNumbersDiv.className = 'game-numbers';
     gameNumbers.forEach((number) => {
         const p = document.createElement('p');
         p.textContent = `Game ${number}`;
@@ -468,6 +488,7 @@ function displayData(data, location) {
 
     // Create div for game data
     const gameDataDiv = document.createElement('div');
+    gameDataDiv.className = 'game-data';
     gameData.forEach((info) => {
         const p = document.createElement('p');
         p.textContent = Array.isArray(info) ? info.join(', ') : info;
@@ -475,6 +496,7 @@ function displayData(data, location) {
     });
 
     const locationCounts = document.createElement('div');
+    locationCounts.className = 'location-counts';
     const hotNumbers = locationsData[location + 'Counts'].slice(0, 5); // Get the hot numbers dynamically
     const hotNumbersTitle = document.createElement('h3');
     hotNumbersTitle.textContent = 'Hot Numbers';

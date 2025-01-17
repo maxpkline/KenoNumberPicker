@@ -228,8 +228,6 @@
         for (let i = 0; i < data.length - 1; i++) {
             const currentGame = data[i];
             const nextGame = data[i + 1];
-
-            // Normalize the numbers to [0,1] range
             const normalizedCurrent = currentGame.numbers.map(n => n / 80);
             const normalizedNext = nextGame.numbers.map(n => n / 80);
 
@@ -252,7 +250,6 @@
         try {
             const trainingDiv = document.getElementById(`${location}-model-training`);
 
-            // Create a structured display container
             trainingDiv.innerHTML = `
             <div class="training-status">
                 <h3>Training Progress</h3>
@@ -549,7 +546,6 @@
         };
     }
 
-    // Add this new function for analyzing n-number combinations
     function analyzeCombinations(data, size) {
         const combMap = new Map();
 
@@ -598,7 +594,6 @@
         };
     }
 
-    // Add this function to analyze all combination sizes
     function analyzeMultiCombinations(data) {
         return {
             fourNumbers: analyzeCombinations(data.slice(0, 100), 4),
@@ -609,10 +604,8 @@
         };
     }
 
-        // Update the predictNextGames function to include pattern analysis
         const predictNextGames = async (model, data, numGames = 10, location) => {
             try {
-                // Original prediction logic
                 let predictions = [];
                 let currentInput = data[0].numbers.map(n => n / 80);
 
@@ -640,7 +633,6 @@
                 // Add pattern analysis including new combinations
                 const patternAnalysis = analyzePatterns(data.slice(0, 100)); // Analyze last 100 games
 
-                // Enhanced console output
                 console.log('\nPredicted games:', predictions);
                 console.log('\nPattern Analysis Results:');
                 console.log('Top Single Numbers:', patternAnalysis.singleNumberStats.mostFrequent.slice(0, 5));
@@ -676,7 +668,6 @@
     function displayModelPredictions(predictions, patternAnalysis, location) {
         const predictionContainer = document.getElementById(`${location}-model-prediction`);
 
-        // Clear previous content
         predictionContainer.innerHTML = "";
 
         // Display predictions
@@ -771,7 +762,7 @@
             case 'rmsprop':
                 return tf.train.rmsprop(config.learningRate, config.decay, config.momentum, config.epsilon);
             default:
-                return tf.train.adam(0.001); // Default optimizer
+                return tf.train.adam(0.001);
         }
     };
 
@@ -832,8 +823,7 @@
                     })
                 ]
             });
-
-            // Compile with proper configuration
+\
             model.compile({
                 optimizer: optimizer,
                 loss: 'meanSquaredError',
@@ -910,10 +900,9 @@
         };
     };
 
-    // Updated Model Architecture
+    // Second Model Architecture
     async function mainModel2(location) {
         try {
-            // Get and process the data
             const kenoData = await processKenoData(`${location}allData`);
 
             if (!kenoData || kenoData.length === 0) {
@@ -963,7 +952,7 @@
 
                     tf.layers.dense({
                         units: 20,
-                        activation: 'sigmoid', // Changed to sigmoid for normalized output
+                        activation: 'sigmoid',
                         kernelInitializer: 'glorotNormal',
                         biasInitializer: 'zeros'
                     })
@@ -996,7 +985,7 @@
             let predictions = [];
 
             // Use the most recent games as the starting rolling window
-            const initialWindow = data.slice(0, 5); // Adjusted for rolling window size
+            const initialWindow = data.slice(0, 5);
             let currentInput = [];
 
             // Add normalized numbers from the initial window
@@ -1054,7 +1043,6 @@
         }
     };
 
-    // Start the application
     // main();
 </script>
 </body>
