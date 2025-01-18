@@ -78,10 +78,9 @@ body {
     margin-top: 20px;
     grid-column: span 3;
     text-align: center;
-    font-size: 50px;
+    font-size: 24px;
     margin-bottom: 20px;
     width: 100%;
-    background-color: #2e0c47;
     border: none;
 }
 
@@ -96,7 +95,7 @@ body {
     margin: auto;
     /*border: 1px solid #ccc;*/
     padding: 10px;
-    background-color: #f9f9f9;
+    background-color: rgb(236, 236, 234);
     border-radius: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     gap: 10px;
@@ -145,6 +144,7 @@ body {
 }
 
 .combination-table {
+    width:100%;
     background-color: rgb(236, 236, 234);
     border: 1px solid #ccc;
     display: grid;
@@ -164,6 +164,7 @@ body {
 }
 
 .predictions-table {
+    width:100%;
     background-color: rgb(236, 236, 234);
     border: 1px solid #ccc;
     display: grid;
@@ -203,6 +204,7 @@ body {
 }
 
 .cooccurrence-table {
+    width:100%;
     background-color: rgb(236, 236, 234);
     border: 1px solid #ccc;
     display: grid;
@@ -233,9 +235,10 @@ body {
 }
 
 .streaks-table {
+    width:100%;
     background-color: rgb(236, 236, 234);
     border: 1px solid #ccc;
-    margin-top: 20px;
+    margin: 10px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     gap: 10px;
@@ -253,8 +256,8 @@ body {
 }
 
 .keno-table > * {
-    border: 1px solid #ccc;
-    background-color: #fff;
+    /*border: 1px solid #ccc;*/
+    /*background-color: #fff;*/
 }
 
 .model-prediction {
