@@ -287,7 +287,7 @@
             let trainingLog = document.getElementById(`${location}-training-log`);
             let progressBar = document.getElementById(`${location}-progress-bar`);
 
-            const totalEpochs = 25;
+            const totalEpochs = 10;
 
             const history = await model.fit(inputs, labels, {
                 epochs: totalEpochs,
