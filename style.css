@@ -706,3 +706,18 @@ button:hover {
     animation: flyIn 1s ease-out forwards;
 }
 
+
+/* for the dynamax model lol */
+.metrics-evaluation {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    background-color: #f7f7f7;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+.metrics-evaluation h4 {
+    margin-top: 0;
+    font-size: 1.1rem;
+}
+

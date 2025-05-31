@@ -43,6 +43,9 @@
         <div id="omaha-model-prediction" class="model-prediction"></div>
         <button id="omaha-trainButton" class="button" onclick="main('omaha')">Model A</button>
         <button id="omaha-trainButton1" class="button" onclick="mainModel2('omaha')">Model B</button>
+        <button id="modelCButton" class="button" onclick="runModelC('omaha')">Model C</button>
+        <button class="button" onclick="runComboRanker('omaha')">Hybrid Combo Ranker</button>
+
     </div>
 
     <div id="lincoln" class="screen">
@@ -287,7 +290,7 @@
             let trainingLog = document.getElementById(`${location}-training-log`);
             let progressBar = document.getElementById(`${location}-progress-bar`);
 
-            const totalEpochs = 10;
+            const totalEpochs = 2;
 
             const history = await model.fit(inputs, labels, {
                 epochs: totalEpochs,
@@ -601,7 +604,7 @@
             fiveNumbers: analyzeCombinations(data.slice(0, 100), 5),
             sixNumbers: analyzeCombinations(data.slice(0, 100), 6),
             sevenNumbers: analyzeCombinations(data.slice(0, 100), 7),
-            // eightNumbers: analyzeCombinations(data.slice(0, 100), 8)
+            eightNumbers: analyzeCombinations(data.slice(0, 50), 8)
         };
     }
 
@@ -632,7 +635,7 @@
                 }
 
                 // Add pattern analysis including new combinations
-                const patternAnalysis = analyzePatterns(data.slice(0, 100)); // Analyze last 100 games
+                const patternAnalysis = analyzePatterns(data.slice(0, 1000)); // Analyze last 100 games
 
                 console.log('\nPredicted games:', predictions);
                 console.log('\nPattern Analysis Results:');
@@ -748,6 +751,12 @@
         addAnalysisSection(
             "Top 7-Number Combinations",
             patternAnalysis.multiCombinations.sevenNumbers.topCombos.slice(0, 5),
+            combo => `<strong>Combination:</strong> [${combo.numbers.join(", ")}], Frequency ${combo.frequency}`
+        );
+
+        addAnalysisSection(
+            "Top Eight Numbers",
+            patternAnalysis.multiCombinations.fourNumbers.topCombos.slice(0, 5),
             combo => `<strong>Combination:</strong> [${combo.numbers.join(", ")}], Frequency ${combo.frequency}`
         );
     }
@@ -1030,7 +1039,7 @@
             }
 
             // Add pattern analysis
-            const patternAnalysis = analyzePatterns(data.slice(0, 100)); // Last 100 games
+            const patternAnalysis = analyzePatterns(data.slice(0, 1000)); // Last 100 games
 
             console.log('Predicted games:', predictions);
             console.log('Pattern Analysis:', patternAnalysis);
@@ -1043,6 +1052,370 @@
             throw error;
         }
     };
+
+
+
+
+
+
+
+    // FOR MODEL C
+
+    // === Model C: Binary Classification for Future Hot Numbers ===
+
+    function preprocessBinaryClassificationData(data, windowSize = 10) {
+        const inputs = [];
+        const labels = [];
+        console.log(data.length);
+
+        for (let i = 0; i < data.length - windowSize; i++) {
+            const window = data.slice(i, i + windowSize);
+            const nextGame = data[i + windowSize];
+
+            const input = window.flatMap(game => game.numbers.map(n => n / 80));
+            const label = Array(80).fill(0);
+            nextGame.numbers.forEach(n => {
+                label[n - 1] = 1;
+            });
+
+            inputs.push(input);
+            labels.push(label);
+        }
+
+        return {
+            inputs: tf.tensor2d(inputs),
+            labels: tf.tensor2d(labels)
+        };
+    }
+
+    function createBinaryClassifierModel(inputLength = 100) {
+        const model = tf.sequential();
+
+        model.add(tf.layers.dense({
+            inputShape: [inputLength],
+            units: 128,
+            activation: 'relu',
+            kernelInitializer: 'glorotUniform'
+        }));
+
+        model.add(tf.layers.dropout({ rate: 0.3 }));
+        model.add(tf.layers.batchNormalization());
+
+        model.add(tf.layers.dense({
+            units: 64,
+            activation: 'relu'
+        }));
+
+        model.add(tf.layers.dropout({ rate: 0.2 }));
+
+        model.add(tf.layers.dense({
+            units: 80,
+            activation: 'sigmoid' // probability for each number
+        }));
+
+        model.compile({
+            optimizer: tf.train.adam(0.001),
+            loss: 'binaryCrossentropy',
+            metrics: ['accuracy']
+        });
+
+        return model;
+    }
+
+    async function runModelC(location) {
+        try {
+            const kenoData = await processKenoData(`${location}allData`);
+
+            if (!kenoData || kenoData.length === 0) {
+                throw new Error('No data for Model C');
+            }
+
+            const { inputs, labels } = preprocessBinaryClassificationData(kenoData, 5);
+            const model = createBinaryClassifierModel(inputs.shape[1]);
+
+            const trainingDiv = document.getElementById(`${location}-model-training`);
+            trainingDiv.innerHTML = `
+            <div class="training-status">
+                <h3>Model C Training Progress</h3>
+                <div class="progress-container">
+                    <div class="current-epoch">Preparing to train...</div>
+                    <div class="metrics-container">
+                        <div class="metric-box">
+                            <label>Training Loss:</label>
+                            <span id="${location}-train-loss">-</span>
+                        </div>
+                        <div class="metric-box">
+                            <label>Validation Loss:</label>
+                            <span id="${location}-val-loss">-</span>
+                        </div>
+                        <div class="metric-box">
+                            <label>Training Accuracy:</label>
+                            <span id="${location}-train-acc">-</span>
+                        </div>
+                        <div class="metric-box">
+                            <label>Validation Accuracy:</label>
+                            <span id="${location}-val-acc">-</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div id="${location}-progress-bar" class="progress-bar"></div>
+                    </div>
+                    <div class="training-log" id="${location}-training-log"></div>
+                </div>
+            </div>
+        `;
+
+            const trainingLog = document.getElementById(`${location}-training-log`);
+            const progressBar = document.getElementById(`${location}-progress-bar`);
+            const totalEpochs = 10;
+            let bestValLoss = Infinity;
+
+            await model.fit(inputs, labels, {
+                epochs: totalEpochs,
+                batchSize: 32,
+                validationSplit: 0.2,
+                shuffle: true,
+                callbacks: {
+                    onEpochBegin: (epoch) => {
+                        document.querySelector('.current-epoch').textContent =
+                            `Epoch ${epoch + 1}/${totalEpochs} in progress...`;
+                    },
+                    onEpochEnd: (epoch, logs) => {
+                        const progress = ((epoch + 1) / totalEpochs) * 100;
+                        progressBar.style.width = `${progress}%`;
+
+                        document.getElementById(`${location}-train-loss`).textContent =
+                            logs.loss.toFixed(4);
+                        document.getElementById(`${location}-val-loss`).textContent =
+                            logs.val_loss.toFixed(4);
+                        document.getElementById(`${location}-train-acc`).textContent =
+                            (logs.acc * 100).toFixed(2) + '%';
+                        document.getElementById(`${location}-val-acc`).textContent =
+                            (logs.val_acc * 100).toFixed(2) + '%';
+
+                        if (logs.val_loss < bestValLoss) {
+                            bestValLoss = logs.val_loss;
+                            trainingLog.innerHTML = `<div class="best-metric">★ New best validation loss: ${logs.val_loss.toFixed(4)} (Epoch ${epoch + 1})</div>` + trainingLog.innerHTML;
+                        }
+
+                        trainingLog.innerHTML = `
+                        <div>
+                            Epoch ${epoch + 1}/${totalEpochs}:
+                            loss=${logs.loss.toFixed(4)},
+                            val_loss=${logs.val_loss.toFixed(4)},
+                            acc=${(logs.acc * 100).toFixed(2)}%,
+                            val_acc=${(logs.val_acc * 100).toFixed(2)}%
+                        </div>` + trainingLog.innerHTML;
+                    }
+                }
+            });
+
+            await predictBinaryModel(model, kenoData, location);
+
+        } catch (error) {
+            console.error("Model C training error:", error);
+            const trainingDiv = document.getElementById(`${location}-model-training`);
+            trainingDiv.innerHTML += `<div class="training-error">Training failed: ${error.message}</div>`;
+        }
+    }
+
+    async function predictBinaryModel(model, data, location) {
+        const recentGames = data.slice(0, 5);
+        const input = recentGames.flatMap(g => g.numbers.map(n => n / 80));
+        const inputTensor = tf.tensor2d([input]);
+
+        const prediction = model.predict(inputTensor);
+        const predictionArray = await prediction.array();
+        const scores = predictionArray[0];
+
+        const ranked = scores.map((score, index) => ({ number: index + 1, score }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 20); // top 20 likely numbers
+
+        console.log(ranked);
+        displayModelCPredictions(ranked, location);
+        evaluateModelCPerformance(numbers, data[5], location);
+    }
+
+    function evaluateModelCPerformance(predicted, actualGame, location) {
+        let tp = 0, fp = 0, fn = 0;
+
+        const actualSet = new Set(actualGame.numbers);
+
+        predicted.forEach(({ number }) => {
+            if (actualSet.has(number)) {
+                tp++;
+            } else {
+                fp++;
+            }
+        });
+
+        actualSet.forEach(n => {
+            if (!predicted.find(p => p.number === n)) {
+                fn++;
+            }
+        });
+
+        const precision = tp / (tp + fp);
+        const recall = tp / (tp + fn);
+        const f1 = (precision + recall > 0) ? 2 * precision * recall / (precision + recall) : 0;
+
+        const container = document.getElementById(`${location}-model-prediction`);
+
+        const metricsBlock = document.createElement("div");
+        metricsBlock.className = "metrics-evaluation";
+        metricsBlock.innerHTML = `
+        <h4>Evaluation against Actual Next Game (Game ${actualGame.gameNumber})</h4>
+        <div><strong>Precision:</strong> ${(precision * 100).toFixed(2)}%</div>
+        <div><strong>Recall:</strong> ${(recall * 100).toFixed(2)}%</div>
+        <div><strong>F1 Score:</strong> ${(f1 * 100).toFixed(2)}%</div>
+        <div><small>(${tp} true positives, ${fp} false positives, ${fn} false negatives)</small></div>
+    `;
+
+        container.appendChild(metricsBlock);
+    }
+
+
+    function displayModelCPredictions(numbers, location) {
+        const container = document.getElementById(`${location}-model-prediction`);
+        container.innerHTML = "<h3>Model C Prediction (Top 20 Likely Numbers)</h3>";
+
+        const grid = document.createElement("div");
+        grid.className = "grid-container";
+
+        numbers.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "grid-item";
+            div.innerHTML = `<strong>${item.number}</strong><br><small>(${(item.score * 100).toFixed(1)}%)</small>`;
+            grid.appendChild(div);
+        });
+
+        container.appendChild(grid);
+    }
+
+
+
+
+
+
+    // FOR HYBRID COMBO RANKER
+
+    // === Uses model C ===
+
+    function buildHybridComboRanker(data, modelCProbabilities, comboSizes = [3, 4, 5], windowSize = 500) {
+        const comboStats = {};
+        const recentData = data.slice(0, windowSize);
+
+        const getCombos = (numbers, size) => {
+            const result = [];
+            const combine = (start, combo) => {
+                if (combo.length === size) {
+                    result.push([...combo].sort((a, b) => a - b));
+                    return;
+                }
+                for (let i = start; i < numbers.length; i++) {
+                    combo.push(numbers[i]);
+                    combine(i + 1, combo);
+                    combo.pop();
+                }
+            };
+            combine(0, []);
+            return result;
+        };
+
+        // Track combo occurrences
+        recentData.forEach((game, index) => {
+            comboSizes.forEach(size => {
+                const combos = getCombos(game.numbers, size);
+                combos.forEach(combo => {
+                    const key = combo.join('-');
+                    if (!comboStats[key]) {
+                        comboStats[key] = {
+                            combo,
+                            frequency: 0,
+                            recentBoost: 0,
+                            hotBoost: 0
+                        };
+                    }
+                    comboStats[key].frequency += 1;
+                    // Recent games get a bit more weight
+                    comboStats[key].recentBoost += (windowSize - index) / windowSize;
+                });
+            });
+        });
+
+        // Add hot number boost (Model C probabilities)
+        Object.values(comboStats).forEach(entry => {
+            entry.combo.forEach(num => {
+                entry.hotBoost += modelCProbabilities[num - 1] || 0;
+            });
+        });
+
+        // Final scoring
+        Object.values(comboStats).forEach(entry => {
+            entry.score =
+                (entry.frequency * 0.4) +
+                (entry.recentBoost * 0.3) +
+                (entry.hotBoost * 0.3);
+        });
+
+        // Group by size
+        const grouped = {};
+        comboSizes.forEach(size => {
+            grouped[size] = Object.values(comboStats)
+                .filter(entry => entry.combo.length === size)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 10); // top 10 combos per size
+        });
+
+        return grouped;
+    }
+
+    async function predictModelCHotScores(model, data) {
+        const recentGames = data.slice(0, 5);
+        const input = recentGames.flatMap(g => g.numbers.map(n => n / 80));
+        const inputTensor = tf.tensor2d([input]);
+        const prediction = model.predict(inputTensor);
+        const predictionArray = await prediction.array();
+        return predictionArray[0]; // length 80: probabilities for numbers 1-80
+    }
+
+
+    async function runComboRanker(location) {
+        const data = await processKenoData(`${location}allData`);
+        const { inputs, labels } = preprocessBinaryClassificationData(data, 5);
+        const model = createBinaryClassifierModel(inputs.shape[1]);
+        await model.fit(inputs, labels, { epochs: 10, batchSize: 32 });
+
+        const modelCProbs = await predictModelCHotScores(model, data);
+        const comboResults = buildHybridComboRanker(data, modelCProbs);
+
+        displayComboRankings(comboResults, location);
+    }
+
+    function displayComboRankings(comboResults, location) {
+        const container = document.getElementById(`${location}-model-prediction`);
+        container.innerHTML = "<h3>Top Combo Predictions (Hybrid Ranker)</h3>";
+
+        Object.entries(comboResults).forEach(([size, combos]) => {
+            const sectionTitle = document.createElement("h4");
+            sectionTitle.textContent = `Top ${size}-Number Combos`;
+            container.appendChild(sectionTitle);
+
+            const grid = document.createElement("div");
+            grid.className = "grid-container";
+
+            combos.forEach(entry => {
+                const div = document.createElement("div");
+                div.className = "grid-item";
+                div.innerHTML = `<strong>${entry.combo.join(', ')}</strong><br><small>Score: ${entry.score.toFixed(3)}</small>`;
+                grid.appendChild(div);
+            });
+
+            container.appendChild(grid);
+        });
+    }
+
 
     // main();
 </script>
