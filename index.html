@@ -26,6 +26,7 @@
     <button id="blairButton" class="button" onclick="showScreen('blair')">Blair</button>
     <button id="beatriceButton" class="button" onclick="showScreen('beatrice')">Beatrice</button>
     <button id="payoutsButton" class="button" onclick="showScreen('payouts')">Payouts</button>
+    <button id="your-ticketButton" class="button" onclick="showScreen('your-ticket')">Your Ticket</button>
 </div>
 </div>
 
@@ -133,6 +134,36 @@
             <p>Figure out the best way to maximize your probability of winning! Each game is different and offers different payouts, so make sure to choose what best suits your playstyle. The minimum denominations is the bet you place for each game on a ticket, and minimum tickets refer to the total amount you have to bet for the ticket to be valid.</p>
         </div>
         <div id="payouts-table" class="payouts-table"></div>
+    </div>
+
+    <div id="your-ticket" class="screen">
+        <h2>Your Keno Ticket Analysis</h2>
+        <div class="input-group">
+            <label for="ticket-location">Location:</label>
+            <select id="ticket-location">
+                <option value="omaha">Omaha</option>
+                <option value="lincoln">Lincoln</option>
+                <option value="fremont">Fremont</option>
+                <option value="norfolk">Norfolk</option>
+                <option value="blair">Blair</option>
+                <option value="beatrice">Beatrice</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="ticket-date">Date (YYYY-MM-DD):</label>
+            <input type="date" id="ticket-date">
+        </div>
+
+        <div class="input-group">
+            <label for="ticket-numbers">Your Numbers (comma-separated):</label>
+            <input type="text" id="ticket-numbers" placeholder="e.g., 5, 12, 23, 31, 40, 45, 55, 78">
+        </div>
+
+        <button class="button" onclick="analyzeUserTicket()">Analyze My Ticket</button>
+
+        <div id="ticket-analysis-results"></div>
+        <canvas id="ticket-match-chart" style="max-width: 600px; margin-top: 20px;"></canvas>
     </div>
 </div>
 

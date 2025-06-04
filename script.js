@@ -1546,3 +1546,98 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(createBubble, 300); // Add new bubbles every 500ms
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+// FOR TICKET STATS PAGE
+
+async function analyzeUserTicket() {
+    const location = document.getElementById('ticket-location').value;
+    // const date = document.getElementById('ticket-date').value;
+    const date = "05/31/2025";
+    const numberInput = document.getElementById('ticket-numbers').value;
+
+    if (!location || !date || !numberInput) {
+        alert('Please fill in all fields.');
+        return;
+    }
+
+    // Parse your numbers
+    const yourNumbers = numberInput.split(',').map(num => parseInt(num.trim(), 10)).filter(n => !isNaN(n));
+    if (yourNumbers.length === 0) {
+        alert('Please enter valid numbers.');
+        return;
+    }
+
+    // Load the data for the selected location
+    const allGames = await readData('omahaallData');
+    console.log(allGames);
+    console.log(date);
+    if (!allGames || !allGames[date]) {
+        alert('No data available for this location and date.');
+        return;
+    }
+
+    const gamesOnDate = allGames[date];
+    const matchCounts = {};
+
+    // Loop through the games
+    Object.values(gamesOnDate).forEach(numbers => {
+        const matches = numbers.filter(num => yourNumbers.includes(parseInt(num, 10))).length;
+        matchCounts[matches] = (matchCounts[matches] || 0) + 1;
+    });
+
+    // Display the results
+    const resultsDiv = document.getElementById('ticket-analysis-results');
+    resultsDiv.innerHTML = '<h3>Match Counts</h3>';
+    Object.keys(matchCounts).sort((a, b) => parseInt(a) - parseInt(b)).forEach(matchCount => {
+        resultsDiv.innerHTML += `<div>${matchCount} hits: ${matchCounts[matchCount]} times</div>`;
+    });
+
+    // Draw a bar chart
+    const ctx = document.getElementById('ticket-match-chart').getContext('2d');
+    if (window.ticketChart) window.ticketChart.destroy(); // Destroy previous chart
+
+    window.ticketChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(matchCounts).sort((a, b) => parseInt(a) - parseInt(b)),
+            datasets: [{
+                label: 'Match Count Frequency',
+                data: Object.keys(matchCounts).sort((a, b) => parseInt(a) - parseInt(b)).map(k => matchCounts[k]),
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Number of Hits'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Frequency'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+

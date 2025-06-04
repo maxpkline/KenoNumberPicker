@@ -721,3 +721,29 @@ button:hover {
     font-size: 1.1rem;
 }
 
+
+
+
+
+/* for ticket stats */
+.ticket-stats-results {
+    margin-top: 1rem;
+}
+
+.ticket-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ticket-stats-table th,
+.ticket-stats-table td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.ticket-stats-table th {
+    background-color: #f0f0f0;
+}
+
+
