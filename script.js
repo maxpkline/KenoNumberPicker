@@ -1,3 +1,6 @@
+import { KENO_CONFIG, MODEL_A_CONFIG } from '/js/config.js';
+import { probabilityOfHitting, combinations } from '/js/utils/MathUtils.js';
+
 async function loadToggleState(location) {
     const divs = [
         // `${location}-keno-title`,
@@ -188,39 +191,39 @@ function calculatePotentialPayouts() {
 }
 
 // function to calculate probability of hitting single game
-function probabilityOfHitting(matches, spotCount) {
-    // Function to calculate combinations (n choose k)
-    function combinations(n, k) {
-        if (k > n) return 0;
-        if (k === 0 || k === n) return 1;
-
-        let result = 1;
-        for (let i = 1; i <= k; i++) {
-            result *= (n - i + 1) / i;
-        }
-        return result;
-    }
-
-    // Total numbers in keno game
-    const totalNumbers = 80;
-    // Numbers drawn each round
-    const numbersDrawn = 20;
-
-    // Calculate probability using hypergeometric distribution
-    // P(X = matches) = [C(numbersDrawn, matches) * C(totalNumbers - numbersDrawn, spotCount - matches)] / C(totalNumbers, spotCount)
-
-    const numerator = combinations(numbersDrawn, matches) *
-        combinations(totalNumbers - numbersDrawn, spotCount - matches);
-    const denominator = combinations(totalNumbers, spotCount);
-
-    // Handle edge cases
-    if (denominator === 0) return 0;
-    if (matches > spotCount) return 0;
-    if (matches > numbersDrawn) return 0;
-    if (spotCount > totalNumbers) return 0;
-
-    return numerator / denominator;
-}
+// function probabilityOfHitting(matches, spotCount) {
+//     // Function to calculate combinations (n choose k)
+//     function combinations(n, k) {
+//         if (k > n) return 0;
+//         if (k === 0 || k === n) return 1;
+//
+//         let result = 1;
+//         for (let i = 1; i <= k; i++) {
+//             result *= (n - i + 1) / i;
+//         }
+//         return result;
+//     }
+//
+//     // Total numbers in keno game
+//     const totalNumbers = KENO_CONFIG.totalNumbers;
+//     // Numbers drawn each round
+//     const numbersDrawn = 20;
+//
+//     // Calculate probability using hypergeometric distribution
+//     // P(X = matches) = [C(numbersDrawn, matches) * C(totalNumbers - numbersDrawn, spotCount - matches)] / C(totalNumbers, spotCount)
+//
+//     const numerator = combinations(numbersDrawn, matches) *
+//         combinations(totalNumbers - numbersDrawn, spotCount - matches);
+//     const denominator = combinations(totalNumbers, spotCount);
+//
+//     // Handle edge cases
+//     if (denominator === 0) return 0;
+//     if (matches > spotCount) return 0;
+//     if (matches > numbersDrawn) return 0;
+//     if (spotCount > totalNumbers) return 0;
+//
+//     return numerator / denominator;
+// }
 
 function probabilityAcrossGames(matches, spotCount, numGames) {
     const singleGameProb = probabilityOfHitting(matches, spotCount);
